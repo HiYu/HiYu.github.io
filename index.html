@@ -124,17 +124,17 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">0</span></a>
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">31</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">0</span></a>
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">20</span></a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">2</span></a>
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">46</span></a>
 
   </li>
         <li class="menu-item menu-item-schedule">
@@ -362,8 +362,1573 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2020/05/01/redis-%E6%BA%90%E7%A0%81%E6%BA%90%E6%96%87%E4%BB%B6%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank Yu">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/01/redis-%E6%BA%90%E7%A0%81%E6%BA%90%E6%96%87%E4%BB%B6%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E/" class="post-title-link" itemprop="url">redis 源码源文件文件说明</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-01 22:34:38" itemprop="dateCreated datePublished" datetime="2020-05-01T22:34:38+08:00">2020-05-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-23 21:45:04" itemprop="dateModified" datetime="2022-04-23T21:45:04+08:00">2022-04-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">源码阅读</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/05/01/redis-%E6%BA%90%E7%A0%81%E6%BA%90%E6%96%87%E4%BB%B6%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E/" class="post-meta-item leancloud_visitors" data-flag-title="redis 源码源文件文件说明" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/05/01/redis-%E6%BA%90%E7%A0%81%E6%BA%90%E6%96%87%E4%BB%B6%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/05/01/redis-%E6%BA%90%E7%A0%81%E6%BA%90%E6%96%87%E4%BB%B6%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="redis-源码源文件说明"><a href="#redis-源码源文件说明" class="headerlink" title="redis 源码源文件说明"></a>redis 源码源文件说明</h1><table>
+<thead>
+<tr>
+<th>分类</th>
+<th>源文件</th>
+<th>说明</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据结构&#x2F;编码</td>
+<td>adlist.c, adlist.h</td>
+<td>双端链表数据结构的实现。</td>
+<td></td>
+</tr>
+<tr>
+<td>数据结构&#x2F;编码</td>
+<td>quicklist.c, quicklist.h</td>
+<td>快表实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据结构&#x2F;编码</td>
+<td>listpack.c, listpack.h, listpack_malloc.h</td>
+<td>5.0 新增liskpack实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据结构&#x2F;编码</td>
+<td>rax.c, rax.h, rax_malloc.h</td>
+<td>基数树实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据结构&#x2F;编码</td>
+<td>dict.c, dict.h</td>
+<td>字典数据结构的实现。</td>
+<td></td>
+</tr>
+<tr>
+<td>数据结构&#x2F;编码</td>
+<td>intset.c, intset.h</td>
+<td>intset 数据结构实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据结构&#x2F;编码</td>
+<td>sds.c, sds.h, sdsalloc.h</td>
+<td>sds 字符串实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据结构&#x2F;编码</td>
+<td>ziplist.c, ziplist.h</td>
+<td>压缩表实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据结构&#x2F;编码</td>
+<td>zipmap.c, zipmap.h</td>
+<td>ZIPMAP 数据结构的实现，在 Redis 2.6 以前用与优化 HASH 类型， Redis 2.6 开始已经废弃。</td>
+<td></td>
+</tr>
+<tr>
+<td>数据结构&#x2F;编码</td>
+<td>stream.h</td>
+<td>5.0 新增stream数据结构实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>t_string.c</td>
+<td>string 数据类型实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>t_hash.c</td>
+<td>hash 数据类型实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>t_list.c</td>
+<td>list 数据类型实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>t_set.c</td>
+<td>set 数据类型实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>t_stream.c</td>
+<td>stream 数据类型实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>t_zset.c</td>
+<td>数据类型实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>geo.c, geo.h, geohash.c, geohash.h, geohash_helper.c, geohash_helper.h</td>
+<td>地理信息相关操作实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>hyperloglog.c</td>
+<td>hyperloglog 相关操作实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>pubsub.c</td>
+<td>消息队列实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>bitops.c</td>
+<td>位操作相关实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>scripting.c</td>
+<td>lua脚本功能实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>sort.c</td>
+<td>SORT命令的实现</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>multi.c</td>
+<td>Redis 的事务实现。</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>blocked.c</td>
+<td>用于实现 BLPOP 命令和 WAIT 命令的阻塞效果。</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>lolwut5.c</td>
+<td>5.0 新增的酷炫命令</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>lolwut.c</td>
+<td>5.0 新增的酷炫命令</td>
+<td></td>
+</tr>
+<tr>
+<td>事件处理器&#x2F;IO</td>
+<td>ae.c, ae.h, ae_epoll.c, ae_evport.c, ae_kqueue.c, ae_select.c</td>
+<td>事件处理器，以及各个具体实现</td>
+<td></td>
+</tr>
+<tr>
+<td>事件处理器&#x2F;IO</td>
+<td>rio.c, rio.h</td>
+<td>Redis 对文件 I&#x2F;O 函数的包装， 在普通 I&#x2F;O 函数的基础上增加了显式缓存、以及计算校验和等功能。</td>
+<td></td>
+</tr>
+<tr>
+<td>事件处理器&#x2F;IO</td>
+<td>bio.c, bio.h</td>
+<td>Redis 的后台 I&#x2F;O 程序，用于将 I&#x2F;O 操作放到子线程里面执行， 减少 I&#x2F;O 操作对主线程的阻塞。</td>
+<td></td>
+</tr>
+<tr>
+<td>事件处理器&#x2F;IO</td>
+<td>syncio.c</td>
+<td>同步IO实现</td>
+<td></td>
+</tr>
+<tr>
+<td>事件处理器&#x2F;IO</td>
+<td>anet.c, anet.h</td>
+<td>Redis 的异步网络框架，内容主要为对 socket 库的包装。</td>
+<td></td>
+</tr>
+<tr>
+<td>事件处理器&#x2F;IO</td>
+<td>networking.c</td>
+<td>Redis 的客户端网络操作库， 用于实现命令请求接收、发送命令回复等工作， 文件中的函数大多为 write 、 read 、 close 等函数的包装， 以及各种协议的分析和构建函数。</td>
+<td></td>
+</tr>
+<tr>
+<td>数据库实现</td>
+<td>object.c</td>
+<td>Redis 的对象系统实现。</td>
+<td></td>
+</tr>
+<tr>
+<td>数据库实现</td>
+<td>db.c</td>
+<td>数据库实现。</td>
+<td></td>
+</tr>
+<tr>
+<td>数据库实现</td>
+<td>notify.c</td>
+<td>Redis 的数据库通知实现。</td>
+<td></td>
+</tr>
+<tr>
+<td>数据库实现</td>
+<td>evict.c</td>
+<td>LRU 数据淘汰机制</td>
+<td></td>
+</tr>
+<tr>
+<td>数据类型&#x2F;功能</td>
+<td>expire.c</td>
+<td>过期机制实现</td>
+<td></td>
+</tr>
+<tr>
+<td>服务端&amp;客户端</td>
+<td>server.c, server.h</td>
+<td>服务端实现</td>
+<td></td>
+</tr>
+<tr>
+<td>服务端&amp;客户端</td>
+<td>config.c, config.h</td>
+<td>Redis 的配置管理实现，负责读取并分析配置文件， 然后根据这些配置修改 Redis 服务器的各个选项。</td>
+<td></td>
+</tr>
+<tr>
+<td>服务端&amp;客户端</td>
+<td>redis-cli.c</td>
+<td>客户端实现</td>
+<td></td>
+</tr>
+<tr>
+<td>持久化</td>
+<td>aof.c</td>
+<td>aof 实现</td>
+<td></td>
+</tr>
+<tr>
+<td>持久化</td>
+<td>redis-check-aof.c</td>
+<td>AOF 文件的合法性检查程序。</td>
+<td></td>
+</tr>
+<tr>
+<td>持久化</td>
+<td>rdb.c, rdb.h</td>
+<td>RDB 功能实现</td>
+<td></td>
+</tr>
+<tr>
+<td>持久化</td>
+<td>redis-check-rdb.c</td>
+<td>RDB 文件的合法性检查程序。</td>
+<td></td>
+</tr>
+<tr>
+<td>持久化</td>
+<td>childinfo.c</td>
+<td>进程处理，rdb或aof子进程工作分离</td>
+<td></td>
+</tr>
+<tr>
+<td>多机支持</td>
+<td>replication.c</td>
+<td>主从复制实现</td>
+<td></td>
+</tr>
+<tr>
+<td>多机支持</td>
+<td>sentinel.c</td>
+<td>哨兵功能实现</td>
+<td></td>
+</tr>
+<tr>
+<td>多机支持</td>
+<td>cluster.c, cluster.h</td>
+<td>集群功能实现</td>
+<td></td>
+</tr>
+<tr>
+<td>多机支持</td>
+<td>redis-trib.rb</td>
+<td>集群管理功能实现</td>
+<td></td>
+</tr>
+<tr>
+<td>监控相关</td>
+<td>slowlog.c, slowlog.h</td>
+<td>慢日志</td>
+<td></td>
+</tr>
+<tr>
+<td>监控相关</td>
+<td>latency.c, latency.h</td>
+<td>延迟监控</td>
+<td></td>
+</tr>
+<tr>
+<td>监控相关</td>
+<td>sparkline.c, sparkline.h</td>
+<td>微线图功能实现</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>util.c, util.h</td>
+<td>工具类函数集合</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>siphash.c</td>
+<td>Redis 4.0 &amp; 5.0, 采用的是 SipHash 哈希算法</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>pqsort.c, pqsort.h</td>
+<td>快速排序（QuickSort）算法的实现</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>lzf_c.c, lzf_d.c, lzf.h, lzfP.h</td>
+<td>Redis 对字符串和 RDB 文件进行压缩时使用的 LZF 压缩算法的实现。</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>module.c, redismodule.h</td>
+<td>支持用户自定义module</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>modules</td>
+<td>module demo</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>endianconv.c, endianconv.h</td>
+<td>二进制的大端、小端转换函数。</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>sha1.c, sha1.h</td>
+<td>SHA1 校验和计算函数。</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>crc16.c, crc64.c, crc64.h</td>
+<td>计算 CRC 校验和。</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>rand.c, rand.h</td>
+<td>随机数实现</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>localtime.c</td>
+<td>时间功能实现</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>setproctitle.c</td>
+<td>进程环境设置函数</td>
+<td></td>
+</tr>
+<tr>
+<td>工具功能</td>
+<td>atomicvar.h</td>
+<td>原子计数实现</td>
+<td></td>
+</tr>
+<tr>
+<td>内存管理</td>
+<td>zmalloc.c, zmalloc.h</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>内存管理</td>
+<td>defrag.c</td>
+<td>内存碎片整理</td>
+<td></td>
+</tr>
+<tr>
+<td>内存管理</td>
+<td>lazyfree.c</td>
+<td>redis 4.0 引入了lazyfree的机制，它可以将删除键或数据库的操作放在后台线程里执行， 从而尽可能地避免服务器阻塞。</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>valgrind.sup</td>
+<td>valgrind 的suppression文件。</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>asciilogo.h</td>
+<td>ascii logo</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>version.h</td>
+<td>版本</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>release.c</td>
+<td>记录和生成 Redis 的释出版本信息。</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>testhelp.h</td>
+<td>测试辅助宏。</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>debug.c</td>
+<td>调试实现。</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>debugmacro.h</td>
+<td>调试宏定义实现</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>redis-benchmark.c</td>
+<td>redis benchmark 测试工具</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>memtest.c</td>
+<td>内存测试。</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>redisassert.h</td>
+<td>Redis 自建的断言系统。</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>help.h</td>
+<td>utils&#x2F;generate-command-help.rb 程序自动生成的命令帮助信息。</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>mkreleasehdr.sh</td>
+<td>用于生成释出信息的脚本。</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>solarisfixes.h</td>
+<td>针对 Solaris 系统的补丁。</td>
+<td></td>
+</tr>
+<tr>
+<td>调试&#x2F;测试&#x2F;其他</td>
+<td>fmacros.h</td>
+<td>一些移植性方面的宏。</td>
+<td></td>
+</tr>
+</tbody></table>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2020/03/14/%E3%80%90leetcode%E3%80%9126-%E9%93%BE%E8%A1%A8-%E9%93%BE%E8%A1%A8%E4%B8%AD%E5%80%92%E6%95%B0%E7%AC%ACk%E4%B8%AA%E8%8A%82%E7%82%B9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank Yu">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/14/%E3%80%90leetcode%E3%80%9126-%E9%93%BE%E8%A1%A8-%E9%93%BE%E8%A1%A8%E4%B8%AD%E5%80%92%E6%95%B0%E7%AC%ACk%E4%B8%AA%E8%8A%82%E7%82%B9/" class="post-title-link" itemprop="url">【leetcode】26. 链表-链表中倒数第k个节点</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-14 23:17:35" itemprop="dateCreated datePublished" datetime="2020-03-14T23:17:35+08:00">2020-03-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-23 21:45:04" itemprop="dateModified" datetime="2022-04-23T21:45:04+08:00">2022-04-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/%E9%93%BE%E8%A1%A8/" itemprop="url" rel="index"><span itemprop="name">链表</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/14/%E3%80%90leetcode%E3%80%9126-%E9%93%BE%E8%A1%A8-%E9%93%BE%E8%A1%A8%E4%B8%AD%E5%80%92%E6%95%B0%E7%AC%ACk%E4%B8%AA%E8%8A%82%E7%82%B9/" class="post-meta-item leancloud_visitors" data-flag-title="【leetcode】26. 链表-链表中倒数第k个节点" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/14/%E3%80%90leetcode%E3%80%9126-%E9%93%BE%E8%A1%A8-%E9%93%BE%E8%A1%A8%E4%B8%AD%E5%80%92%E6%95%B0%E7%AC%ACk%E4%B8%AA%E8%8A%82%E7%82%B9/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/14/%E3%80%90leetcode%E3%80%9126-%E9%93%BE%E8%A1%A8-%E9%93%BE%E8%A1%A8%E4%B8%AD%E5%80%92%E6%95%B0%E7%AC%ACk%E4%B8%AA%E8%8A%82%E7%82%B9/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>输入一个链表，输出该链表中倒数第k个节点。为了符合大多数人的习惯，本题从1开始计数，即链表的尾节点是倒数第1个节点。例如，一个链表有6个节点，从头节点开始，它们的值依次是1、2、3、4、5、6。这个链表的倒数第3个节点是值为4的节点。<br><strong>难易程度</strong>：easy</p>
+<p><strong>示例 1</strong>:</p>
+<blockquote>
+<p>给定一个链表: 1-&gt;2-&gt;3-&gt;4-&gt;5, 和 k &#x3D; 2.<br>返回链表 4-&gt;5.</p>
+</blockquote>
+<blockquote>
+<p>来源：力扣（LeetCode）<br>链接：<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof">https://leetcode-cn.com/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof</a><br>著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。</p>
+</blockquote>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>本题典型的双指针题目：</p>
+<ol>
+<li>设指针<code>rp</code>、<code>lp</code>都指向<code>head</code>,</li>
+<li><code>rp</code>先走<code>k</code>步</li>
+<li><code>rp</code>、<code>lp</code> 同步移动</li>
+<li>到<code>rp</code>指向链表尾后<code>NULL</code>的时候，<code>lp</code>即是倒数第<code>k</code>个节点</li>
+</ol>
+<p><strong>时间复杂度</strong>：O(N)<br><strong>空间复杂度</strong>：O(1)</p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for singly-linked list.</span></span><br><span class="line"><span class="comment"> * struct ListNode &#123;</span></span><br><span class="line"><span class="comment"> *     int val;</span></span><br><span class="line"><span class="comment"> *     ListNode *next;</span></span><br><span class="line"><span class="comment"> *     ListNode(int x) : val(x), next(NULL) &#123;&#125;</span></span><br><span class="line"><span class="comment"> * &#125;;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">ListNode* <span class="title">getKthFromEnd</span><span class="params">(ListNode* head, <span class="type">int</span> k)</span> </span>&#123;</span><br><span class="line">        ListNode *lp = head, *rp = head;</span><br><span class="line">        <span class="keyword">while</span> (rp != <span class="literal">NULL</span>) &#123;</span><br><span class="line">            rp = rp-&gt;next;</span><br><span class="line">            <span class="keyword">if</span> (k &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                k--;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                lp = lp-&gt;next;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> lp;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>上述算法，可以进一步优化，<code>rp</code>只先走<code>k-1</code>步，最后<code>rp</code>指向链表的最后一个节点。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for singly-linked list.</span></span><br><span class="line"><span class="comment"> * struct ListNode &#123;</span></span><br><span class="line"><span class="comment"> *     int val;</span></span><br><span class="line"><span class="comment"> *     ListNode *next;</span></span><br><span class="line"><span class="comment"> *     ListNode(int x) : val(x), next(NULL) &#123;&#125;</span></span><br><span class="line"><span class="comment"> * &#125;;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">ListNode* <span class="title">getKthFromEnd</span><span class="params">(ListNode* head, <span class="type">int</span> k)</span> </span>&#123;</span><br><span class="line">        ListNode *lp = head, *rp = head;</span><br><span class="line">        <span class="keyword">while</span> (rp-&gt;next != <span class="literal">NULL</span>) &#123;</span><br><span class="line">            rp = rp-&gt;next;<span class="comment">// 结束时，rp是最后一个节点，而非NULL</span></span><br><span class="line">            <span class="keyword">if</span> (k &gt; <span class="number">1</span>) &#123;</span><br><span class="line">                k--;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                lp = lp-&gt;next;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> lp;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2020/03/08/%E3%80%90leetcode%E3%80%9125-%E6%95%B0%E7%BB%84-%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%9A%84%E6%9C%80%E5%B0%8F%E6%95%B0%E5%AD%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank Yu">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/08/%E3%80%90leetcode%E3%80%9125-%E6%95%B0%E7%BB%84-%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%9A%84%E6%9C%80%E5%B0%8F%E6%95%B0%E5%AD%97/" class="post-title-link" itemprop="url">【leetcode】25. 数组-旋转数组的最小数字</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-08 22:24:30" itemprop="dateCreated datePublished" datetime="2020-03-08T22:24:30+08:00">2020-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-23 21:45:04" itemprop="dateModified" datetime="2022-04-23T21:45:04+08:00">2022-04-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/%E6%95%B0%E7%BB%84/" itemprop="url" rel="index"><span itemprop="name">数组</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/08/%E3%80%90leetcode%E3%80%9125-%E6%95%B0%E7%BB%84-%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%9A%84%E6%9C%80%E5%B0%8F%E6%95%B0%E5%AD%97/" class="post-meta-item leancloud_visitors" data-flag-title="【leetcode】25. 数组-旋转数组的最小数字" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/08/%E3%80%90leetcode%E3%80%9125-%E6%95%B0%E7%BB%84-%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%9A%84%E6%9C%80%E5%B0%8F%E6%95%B0%E5%AD%97/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/08/%E3%80%90leetcode%E3%80%9125-%E6%95%B0%E7%BB%84-%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%9A%84%E6%9C%80%E5%B0%8F%E6%95%B0%E5%AD%97/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。输入一个递增排序的数组的一个旋转，输出旋转数组的最小元素。例如，数组 [3,4,5,1,2] 为 [1,2,3,4,5] 的一个旋转，该数组的最小值为1。  <br>难易程度：<em>easy</em></p>
+<p><strong>示例 1</strong>：</p>
+<blockquote>
+<p>输入：[3,4,5,1,2]<br>输出：1</p>
+</blockquote>
+<p><strong>示例 2</strong>：</p>
+<blockquote>
+<p>输入：[2,2,2,0,1]<br>输出：0</p>
+</blockquote>
+<blockquote>
+<p>来源：力扣（LeetCode）<br>链接：<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/xuan-zhuan-shu-zu-de-zui-xiao-shu-zi-lcof">https://leetcode-cn.com/problems/xuan-zhuan-shu-zu-de-zui-xiao-shu-zi-lcof</a><br>著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。</p>
+</blockquote>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h2><h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>首先，题目中给出的数组是部分有序。最小的元素就是<strong>旋转点</strong>：</p>
+<ol>
+<li>前后元素都比他大</li>
+<li>前边的子数组是递增的</li>
+<li>后边的子数组是递增的</li>
+</ol>
+<p>因此，直观的解法就是遍历，找到第一个位置：<code>numbers[l] &lt; numbers[r]</code>。<br><strong>时间复杂度</strong>：O(N)<br><strong>空间复杂度</strong>：O(1)</p>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="type">int</span> <span class="title function_">minArray</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;&amp; numbers)</span> &#123;</span><br><span class="line">        <span class="type">int</span> l = <span class="number">0</span>, r = numbers.size() - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (l &lt; r) &#123;</span><br><span class="line">            <span class="keyword">if</span> (numbers[l] &gt;= numbers[r]) &#123;</span><br><span class="line">                l++;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> numbers[l];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h2><h3 id="分析-1"><a href="#分析-1" class="headerlink" title="分析"></a>分析</h3><p>题意已经明确，原始数组是由有序数组旋转生成，设最小值的索引为<code>mid</code>，则<code>[0, mid)</code>和<code>[mid, size)</code>是两个有序数组。查找最小值本身就是搜索问题。本题题意抽取出如下两点：</p>
+<ol>
+<li>有序</li>
+<li>查找</li>
+</ol>
+<p>因此，可以考虑二分搜索算法，判断条件如下;</p>
+<ol>
+<li><code>numbers[mid] &gt; numbers</code> , 则<code>l = mid + 1</code></li>
+<li><code>numbers[mid] &lt; numbers</code>, 则<code>r = mid</code></li>
+<li><code>numbers[mid] == numbers</code> ,特殊的点就在这儿，此时，最小值只能在<code>[l, r)</code>，因此<code>r--</code></li>
+</ol>
+<p><strong>时间复杂度</strong>：O(logN)<br><strong>空间复杂度</strong>：O(1)</p>
+<h3 id="代码-1"><a href="#代码-1" class="headerlink" title="代码"></a>代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="type">int</span> <span class="title function_">minArray</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;&amp; numbers)</span> &#123;</span><br><span class="line">        <span class="type">int</span> l = <span class="number">0</span>, r = numbers.size() - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (l &lt; r) &#123;</span><br><span class="line">            <span class="type">int</span> mid = ((r - l) &gt;&gt; <span class="number">1</span>) + l;</span><br><span class="line">            <span class="keyword">if</span> (numbers[mid] &gt; numbers[r]) &#123;</span><br><span class="line">                l = mid + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (numbers[mid] &lt; numbers[r]) &#123;</span><br><span class="line">                r = mid;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                r--;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> numbers[r];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2020/03/08/%E3%80%90leetcode%E3%80%9124-%E6%95%B0%E5%AD%A6-%E9%9D%92%E8%9B%99%E8%B7%B3%E5%8F%B0%E9%98%B6%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank Yu">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/08/%E3%80%90leetcode%E3%80%9124-%E6%95%B0%E5%AD%A6-%E9%9D%92%E8%9B%99%E8%B7%B3%E5%8F%B0%E9%98%B6%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">【leetcode】24. 数学-青蛙跳台阶问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-08 22:24:17" itemprop="dateCreated datePublished" datetime="2020-03-08T22:24:17+08:00">2020-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-23 21:45:04" itemprop="dateModified" datetime="2022-04-23T21:45:04+08:00">2022-04-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/08/%E3%80%90leetcode%E3%80%9124-%E6%95%B0%E5%AD%A6-%E9%9D%92%E8%9B%99%E8%B7%B3%E5%8F%B0%E9%98%B6%E9%97%AE%E9%A2%98/" class="post-meta-item leancloud_visitors" data-flag-title="【leetcode】24. 数学-青蛙跳台阶问题" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/08/%E3%80%90leetcode%E3%80%9124-%E6%95%B0%E5%AD%A6-%E9%9D%92%E8%9B%99%E8%B7%B3%E5%8F%B0%E9%98%B6%E9%97%AE%E9%A2%98/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/08/%E3%80%90leetcode%E3%80%9124-%E6%95%B0%E5%AD%A6-%E9%9D%92%E8%9B%99%E8%B7%B3%E5%8F%B0%E9%98%B6%E9%97%AE%E9%A2%98/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>760</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>一只青蛙一次可以跳上1级台阶，也可以跳上2级台阶。求该青蛙跳上一个 n 级的台阶总共有多少种跳法。<br>答案需要取模 1e9+7（1000000007），如计算初始结果为：1000000008，请返回 1。<br>难易程度：<em>easy</em></p>
+<p><strong>示例 1</strong>：</p>
+<blockquote>
+<p>输入：n &#x3D; 2<br>输出：2</p>
+</blockquote>
+<p><strong>示例 2</strong>：</p>
+<blockquote>
+<p>输入：n &#x3D; 7<br>输出：21</p>
+</blockquote>
+<p><strong>提示</strong>：</p>
+<blockquote>
+<p>0 &lt;&#x3D; n &lt;&#x3D; 100</p>
+</blockquote>
+<blockquote>
+<p>来源：力扣（LeetCode）<br>链接：<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/qing-wa-tiao-tai-jie-wen-ti-lcof">https://leetcode-cn.com/problems/qing-wa-tiao-tai-jie-wen-ti-lcof</a><br>著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。</p>
+</blockquote>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>首先枚举几个结果：</p>
+<blockquote>
+<p>当 n &#x3D; 0； 需要跳 1 次<br>当 n &#x3D; 1； 需要跳 1 次<br>当 n &#x3D; 2； 需要跳 2 次<br>当 n &#x3D; 3； 需要跳 3 次<br>当 n &#x3D; 4； 需要跳 5 次<br>当 n &#x3D; 5； 需要跳 8 次<br>…</p>
+</blockquote>
+<p>如果青蛙要跳到第<code>n</code>级台阶，则它要么从<code>n-1</code>级台阶跳<code>1</code>级跳，要么从<code>n-2</code>级台阶跳<code>2</code>级跳。设跳到<code>n</code>级台阶有<code>dp[n]</code>种方法，则<code>dp[n] = dp[n-1]+dp[n-2]</code>。<br>至此，会发现其实就是一个斐波那契数列的变种，不同点就是<code>dp[0] = 1</code>，而斐波那契数列第0个数是0.</p>
+<p><strong>时间复杂度</strong>：O(N)<br><strong>空间复杂度</strong>：O(1)</p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="type">int</span> <span class="title function_">numWays</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> n0 = <span class="number">1</span>, n1 = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">2</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            <span class="type">int</span> tmp = n1;</span><br><span class="line">            n1 = (n0 + n1) % <span class="number">1000000007</span>;</span><br><span class="line">            n0 = tmp;</span><br><span class="line">        &#125; </span><br><span class="line">        <span class="keyword">return</span> n1;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2020/03/08/%E3%80%90leetcode%E3%80%9122-%E4%BD%8D%E6%93%8D%E4%BD%9C-%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B8%AD1%E7%9A%84%E4%B8%AA%E6%95%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank Yu">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/08/%E3%80%90leetcode%E3%80%9122-%E4%BD%8D%E6%93%8D%E4%BD%9C-%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B8%AD1%E7%9A%84%E4%B8%AA%E6%95%B0/" class="post-title-link" itemprop="url">【leetcode】22. 位操作-二进制中1的个数</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-08 22:23:53" itemprop="dateCreated datePublished" datetime="2020-03-08T22:23:53+08:00">2020-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-23 21:45:04" itemprop="dateModified" datetime="2022-04-23T21:45:04+08:00">2022-04-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/%E4%BD%8D%E6%93%8D%E4%BD%9C/" itemprop="url" rel="index"><span itemprop="name">位操作</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/08/%E3%80%90leetcode%E3%80%9122-%E4%BD%8D%E6%93%8D%E4%BD%9C-%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B8%AD1%E7%9A%84%E4%B8%AA%E6%95%B0/" class="post-meta-item leancloud_visitors" data-flag-title="【leetcode】22. 位操作-二进制中1的个数" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/08/%E3%80%90leetcode%E3%80%9122-%E4%BD%8D%E6%93%8D%E4%BD%9C-%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B8%AD1%E7%9A%84%E4%B8%AA%E6%95%B0/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/08/%E3%80%90leetcode%E3%80%9122-%E4%BD%8D%E6%93%8D%E4%BD%9C-%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B8%AD1%E7%9A%84%E4%B8%AA%E6%95%B0/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>请实现一个函数，输入一个整数，输出该数二进制表示中 1 的个数。例如，把 9 表示成二进制是 1001，有 2 位是 1。因此，如果输入 9，则该函数输出 2。<br>难易程度：<em>easy</em></p>
+<p><strong>示例 1</strong>：</p>
+<blockquote>
+<p>输入：00000000000000000000000000001011<br>输出：3<br>解释：输入的二进制串 00000000000000000000000000001011 中，共有三位为 ‘1’。</p>
+</blockquote>
+<p><strong>示例 2</strong>：</p>
+<blockquote>
+<p>输入：00000000000000000000000010000000<br>输出：1<br>解释：输入的二进制串 00000000000000000000000010000000 中，共有一位为 ‘1’。</p>
+</blockquote>
+<p><strong>示例 3</strong>：</p>
+<blockquote>
+<p>输入：11111111111111111111111111111101<br>输出：31<br>解释：输入的二进制串 11111111111111111111111111111101 中，共有 31 位为 ‘1’。</p>
+</blockquote>
+<blockquote>
+<p>来源：力扣（LeetCode）<br>链接：<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/er-jin-zhi-zhong-1de-ge-shu-lcof">https://leetcode-cn.com/problems/er-jin-zhi-zhong-1de-ge-shu-lcof</a><br>著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。</p>
+</blockquote>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h2><h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>本题一种暴力的解法就是循环判断<code>n</code>的每一位是否为<code>1</code>。<br><strong>时间复杂度</strong>：O(1)，可以算作O(1)的时间复杂度了，毕竟循环32次就行了。<br><strong>空间复杂度</strong>：O(1)</p>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="type">int</span> <span class="title function_">hammingWeight</span><span class="params">(<span class="type">uint32_t</span> n)</span> &#123;</span><br><span class="line">        <span class="type">int</span> cnt = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span>(n) &#123;</span><br><span class="line">            cnt += n &amp; <span class="number">1</span>;<span class="comment">//只判断最后一位</span></span><br><span class="line">            n &gt;&gt;= <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cnt;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h2><h3 id="分析-1"><a href="#分析-1" class="headerlink" title="分析"></a>分析</h3><p><code>n-1</code>会将<code>n</code>最左侧的<code>1</code>变成<code>0</code>，同最左侧的<code>0</code>变成<code>1</code>。如：</p>
+<blockquote>
+<p>n:       00000000000000000000000000001011<br>n-1:     00000000000000000000000000001010<br>n&amp;(n-1):  00000000000000000000000000001010<br>n:       00000000000000000000000000001000<br>n-1:     00000000000000000000000000000111<br>n&amp;(n-1):  00000000000000000000000000000000</p>
+</blockquote>
+<p>从上面可以看出，n&amp;(n-1)可以消去<code>n</code>最左侧的<code>1</code>,从而使得遍历次数为<code>1</code>的个数。<br><strong>时间复杂度</strong>：O(1)，可以算作O(1)的时间复杂度了，循环最多32次就行了。<br><strong>空间复杂度</strong>：O(1)</p>
+<h3 id="代码-1"><a href="#代码-1" class="headerlink" title="代码"></a>代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="type">int</span> <span class="title function_">hammingWeight</span><span class="params">(<span class="type">uint32_t</span> n)</span> &#123;</span><br><span class="line">        <span class="type">int</span> res = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (n) &#123;</span><br><span class="line">            res ++;</span><br><span class="line">            n &amp;=(n<span class="number">-1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2020/03/08/%E3%80%90leetcode%E3%80%9120-%E5%BA%8F%E5%88%97-%E5%92%8C%E4%B8%BAs%E7%9A%84%E8%BF%9E%E7%BB%AD%E6%AD%A3%E6%95%B0%E5%BA%8F%E5%88%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank Yu">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/08/%E3%80%90leetcode%E3%80%9120-%E5%BA%8F%E5%88%97-%E5%92%8C%E4%B8%BAs%E7%9A%84%E8%BF%9E%E7%BB%AD%E6%AD%A3%E6%95%B0%E5%BA%8F%E5%88%97/" class="post-title-link" itemprop="url">【leetcode】20. 序列-和为s的连续正数序列</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-08 22:23:39" itemprop="dateCreated datePublished" datetime="2020-03-08T22:23:39+08:00">2020-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-23 21:45:04" itemprop="dateModified" datetime="2022-04-23T21:45:04+08:00">2022-04-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/%E5%BA%8F%E5%88%97/" itemprop="url" rel="index"><span itemprop="name">序列</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/08/%E3%80%90leetcode%E3%80%9120-%E5%BA%8F%E5%88%97-%E5%92%8C%E4%B8%BAs%E7%9A%84%E8%BF%9E%E7%BB%AD%E6%AD%A3%E6%95%B0%E5%BA%8F%E5%88%97/" class="post-meta-item leancloud_visitors" data-flag-title="【leetcode】20. 序列-和为s的连续正数序列" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/08/%E3%80%90leetcode%E3%80%9120-%E5%BA%8F%E5%88%97-%E5%92%8C%E4%B8%BAs%E7%9A%84%E8%BF%9E%E7%BB%AD%E6%AD%A3%E6%95%B0%E5%BA%8F%E5%88%97/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/08/%E3%80%90leetcode%E3%80%9120-%E5%BA%8F%E5%88%97-%E5%92%8C%E4%B8%BAs%E7%9A%84%E8%BF%9E%E7%BB%AD%E6%AD%A3%E6%95%B0%E5%BA%8F%E5%88%97/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>输入一个正整数 target ，输出所有和为 target 的连续正整数序列（至少含有两个数）。<br>序列内的数字由小到大排列，不同序列按照首个数字从小到大排列。<br><strong>难易程度</strong>：easy</p>
+<p><strong>示例 1</strong>：</p>
+<blockquote>
+<p>输入：target &#x3D; 9<br>输出：[[2,3,4],[4,5]]</p>
+</blockquote>
+<p><strong>示例 2</strong>：</p>
+<blockquote>
+<p>输入：target &#x3D; 15<br>输出：[[1,2,3,4,5],[4,5,6],[7,8]]<br> <br>限制：<br>1 &lt;&#x3D; target &lt;&#x3D; 10^5</p>
+</blockquote>
+<blockquote>
+<p>来源：力扣（LeetCode）<br>链接：<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/he-wei-sde-lian-xu-zheng-shu-xu-lie-lcof">https://leetcode-cn.com/problems/he-wei-sde-lian-xu-zheng-shu-xu-lie-lcof</a><br>著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。</p>
+</blockquote>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>本题方法比较多，如暴力遍历，双指针法等，这里只介绍利用数学公式来求解的方法。<br>本题本质上是序列求和问题，此类问题的一个经典问题就是求<code>1,...,100</code>这100个数之和。当年高斯使用的方法就是<code>(1+100)*100/2</code>。</p>
+<p>设<code>s &lt; x</code> 且<code>s,...,x</code>这<code>(x - s + 1)</code>个连续整数之和为<code>target</code>。那么，有<code>(s + x)*(x -s + 1) == 2 * target</code>,即存在一元二次方程:<br><code>x^2 + x + s*(1-s) - 2*target = 0</code>。<br>根据韦达定理解得：<br><code>x = (sqrt(1-4(s*(1-s) - 2*target)) - 1) / 2</code><br>最终本题转变成有多少个<code>[s, x]</code>区间的问题，即枚举<code>s</code>的情况下求解一元二次方程:<code>x^2 + x + s*(1-s) - 2*target = 0</code> 整数正值的问题。</p>
+<p><strong>时间复杂度</strong>：O(N)，由于枚举以后只需要 O(1)的时间判断，所以时间复杂度为枚举起点的复杂度O(target&#x2F;2) 。<br><strong>空间复杂度</strong>：O(1) ，除了答案数组只需要常数的空间存放若干变量。</p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;&gt; findContinuousSequence(<span class="type">int</span> target) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;&gt; res;</span><br><span class="line">        <span class="comment">// 题中要求至少含有两个数，所以s最大为target-1</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> s = <span class="number">1</span>; s &lt;= target / <span class="number">2</span>; s++) &#123;</span><br><span class="line">            <span class="comment">// 主要这里s*(1-s)可能超过MAX_INT，因此同乘以1ll来提升类型，下同</span></span><br><span class="line">            <span class="type">long</span> <span class="type">long</span> d = <span class="number">1</span> - <span class="number">4</span>*(<span class="number">1ll</span> * s*(<span class="number">1</span> - s) - <span class="number">2</span> * target);</span><br><span class="line">            <span class="keyword">if</span> (d &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">int</span> sqrt_d = (<span class="type">int</span>)<span class="built_in">sqrt</span>(d);</span><br><span class="line">            <span class="keyword">if</span> (<span class="number">1ll</span> * sqrt_d * sqrt_d == d &amp;&amp; (sqrt_d - <span class="number">1</span>) % <span class="number">2</span> == <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="built_in">vector</span>&lt;<span class="type">int</span>&gt; tmp;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> i = s; i &lt;= (sqrt_d - <span class="number">1</span>) / <span class="number">2</span>; i++) &#123;</span><br><span class="line">                    tmp.push_back(i);</span><br><span class="line">                &#125;</span><br><span class="line">                res.push_back(tmp);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2020/03/08/%E3%80%90leetcode%E3%80%9121-%E5%BA%8F%E5%88%97-%E5%92%8C%E4%B8%BAs%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%95%B0%E5%AD%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank Yu">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/08/%E3%80%90leetcode%E3%80%9121-%E5%BA%8F%E5%88%97-%E5%92%8C%E4%B8%BAs%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%95%B0%E5%AD%97/" class="post-title-link" itemprop="url">【leetcode】21. 序列-和为s的两个数字</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-08 22:21:28" itemprop="dateCreated datePublished" datetime="2020-03-08T22:21:28+08:00">2020-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-23 21:45:04" itemprop="dateModified" datetime="2022-04-23T21:45:04+08:00">2022-04-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/%E5%BA%8F%E5%88%97/" itemprop="url" rel="index"><span itemprop="name">序列</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/08/%E3%80%90leetcode%E3%80%9121-%E5%BA%8F%E5%88%97-%E5%92%8C%E4%B8%BAs%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%95%B0%E5%AD%97/" class="post-meta-item leancloud_visitors" data-flag-title="【leetcode】21. 序列-和为s的两个数字" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/08/%E3%80%90leetcode%E3%80%9121-%E5%BA%8F%E5%88%97-%E5%92%8C%E4%B8%BAs%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%95%B0%E5%AD%97/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/08/%E3%80%90leetcode%E3%80%9121-%E5%BA%8F%E5%88%97-%E5%92%8C%E4%B8%BAs%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%95%B0%E5%AD%97/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>输入一个递增排序的数组和一个数字s，在数组中查找两个数，使得它们的和正好是s。如果有多对数字的和等于s，则输出任意一对即可。<br>难易程度：<em>easy</em></p>
+<p><strong>示例 1</strong>：</p>
+<blockquote>
+<p>输入：nums &#x3D; [2,7,11,15], target &#x3D; 9<br>输出：[2,7] 或者 [7,2]</p>
+</blockquote>
+<p><strong>示例 2</strong>：</p>
+<blockquote>
+<p>输入：nums &#x3D; [10,26,30,31,47,60], target &#x3D; 40<br>输出：[10,30] 或者 [30,10]<br> <br><strong>限制</strong>：<br>1 &lt;&#x3D; nums.length &lt;&#x3D; 10^5<br>1 &lt;&#x3D; nums[i] &lt;&#x3D; 10^6</p>
+</blockquote>
+<blockquote>
+<p>来源：力扣（LeetCode）<br>链接：<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/he-wei-sde-liang-ge-shu-zi-lcof">https://leetcode-cn.com/problems/he-wei-sde-liang-ge-shu-zi-lcof</a><br>著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。</p>
+</blockquote>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>本题和《【leetcode】5. 数组-两数之和》列数，不通的地方是本题给出的数组是递增有序的。因此可以利用这条件来进行优化求解。<br>基本方法是利用双指针法，遍历求和。设有两个指针（下标）<code>int left = 0, right = nums.size() - 1;</code> 循环求解<code>um = nums[left] + nums[right];</code></p>
+<ol>
+<li>如果 <code>sum == target</code> 则返回对应下标元素</li>
+<li>如果 <code>sum &lt; target</code> 则<code>left++</code></li>
+<li>否则 <code>rigth--</code></li>
+</ol>
+<p><strong>时间复杂度</strong>：O(N)<br><strong>空间复杂度</strong>：O(1)</p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="type">int</span>&gt; <span class="title function_">twoSum</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;&amp; nums, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        <span class="type">int</span> left = <span class="number">0</span>, right = nums.size() - <span class="number">1</span>;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="type">int</span>&gt; res;</span><br><span class="line">        <span class="keyword">while</span> (left &lt; right) &#123;</span><br><span class="line">            <span class="type">int</span> sum = nums[left] + nums[right];</span><br><span class="line">            <span class="keyword">if</span> (sum == target) &#123;</span><br><span class="line">                res.push_back(nums[left]);</span><br><span class="line">                res.push_back(nums[right]);</span><br><span class="line">                <span class="keyword">return</span> res;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (sum &lt; target) &#123;</span><br><span class="line">                left++;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                right--;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2020/03/08/%E3%80%90leetcode%E3%80%9123-%E6%95%B0%E5%AD%A6-%E6%96%90%E6%B3%A2%E9%82%A3%E5%A5%91%E6%95%B0%E5%88%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank Yu">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/08/%E3%80%90leetcode%E3%80%9123-%E6%95%B0%E5%AD%A6-%E6%96%90%E6%B3%A2%E9%82%A3%E5%A5%91%E6%95%B0%E5%88%97/" class="post-title-link" itemprop="url">【leetcode】23. 数学-斐波那契数列</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-08 22:19:20" itemprop="dateCreated datePublished" datetime="2020-03-08T22:19:20+08:00">2020-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-23 21:45:04" itemprop="dateModified" datetime="2022-04-23T21:45:04+08:00">2022-04-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/leetcode/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/08/%E3%80%90leetcode%E3%80%9123-%E6%95%B0%E5%AD%A6-%E6%96%90%E6%B3%A2%E9%82%A3%E5%A5%91%E6%95%B0%E5%88%97/" class="post-meta-item leancloud_visitors" data-flag-title="【leetcode】23. 数学-斐波那契数列" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/08/%E3%80%90leetcode%E3%80%9123-%E6%95%B0%E5%AD%A6-%E6%96%90%E6%B3%A2%E9%82%A3%E5%A5%91%E6%95%B0%E5%88%97/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/08/%E3%80%90leetcode%E3%80%9123-%E6%95%B0%E5%AD%A6-%E6%96%90%E6%B3%A2%E9%82%A3%E5%A5%91%E6%95%B0%E5%88%97/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>写一个函数，输入 n ，求斐波那契（Fibonacci）数列的第 n 项。斐波那契数列的定义如下：<br>F(0) &#x3D; 0,   F(1) &#x3D; 1<br>F(N) &#x3D; F(N - 1) + F(N - 2), 其中 N &gt; 1.<br>斐波那契数列由 0 和 1 开始，之后的斐波那契数就是由之前的两数相加而得出。<br>答案需要取模 1e9+7（1000000007），如计算初始结果为：1000000008，请返回 1。<br>难易程度：<em>easy</em><br> <br><strong>示例 1</strong>：</p>
+<blockquote>
+<p>输入：n &#x3D; 2<br>输出：1</p>
+</blockquote>
+<p><strong>示例 2</strong>：</p>
+<blockquote>
+<p>输入：n &#x3D; 5<br>输出：5</p>
+</blockquote>
+<blockquote>
+<p>来源：力扣（LeetCode）<br>链接：<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/fei-bo-na-qi-shu-lie-lcof">https://leetcode-cn.com/problems/fei-bo-na-qi-shu-lie-lcof</a><br>著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。</p>
+</blockquote>
+<h1 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h1><h2 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h2><h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>本题是经典的递归算法示例：<br>结束条件：<code>F(0) = 0, F(1) = 1</code><br>递归公式：<code>F(N) = F(N - 1) + F(N - 2)</code></p>
+<p><strong>时间复杂度</strong>：O(N^2)<br><strong>空间复杂度</strong>：O(N)</p>
+<p>ps:时间复杂度太高了，leetcode超时了。</p>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="type">int</span> <span class="title function_">fib</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span> ||n == <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> n;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> fib(n - <span class="number">1</span>) + fib(n - <span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h2><h3 id="分析-1"><a href="#分析-1" class="headerlink" title="分析"></a>分析</h3><p>本题也是动态规划的经典示例。</p>
+<ol>
+<li>状态定义：设dp为一维数组，其中dp[i]的值代表斐波那契数列第i个数字。</li>
+<li>转移方程：<code>dp[i + 1] = dp[i] + dp[i - 1]</code>，即对应数列定义<code> f(n + 1) = f(n) + f(n - 1)</code>；</li>
+<li>初始状态：<code>dp[0] = 0, dp[1] = 1</code>，即初始化前两个数字；</li>
+<li>返回值： <code>dp[n]</code>，即斐波那契数列的第<code>n</code>个数字.</li>
+</ol>
+<p><strong>时间复杂度</strong>：O(N)<br><strong>空间复杂度</strong>：O(N)</p>
+<h3 id="代码-1"><a href="#代码-1" class="headerlink" title="代码"></a>代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="type">int</span> <span class="title function_">fib</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="type">int</span>&gt; dp;</span><br><span class="line">        dp.push_back(<span class="number">0</span>);</span><br><span class="line">        dp.push_back(<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">2</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            dp.push_back((dp[i<span class="number">-1</span>] + dp[i<span class="number">-2</span>]) % <span class="number">1000000007</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="方法三"><a href="#方法三" class="headerlink" title="方法三"></a>方法三</h2><h3 id="分析-2"><a href="#分析-2" class="headerlink" title="分析"></a>分析</h3><p>经典的动态规划方法较递归方法时间复杂度有所优化，但空间复杂度并没有优化。从动态规划方法中转移方程我们只用到了<code>dp[i + 1]</code>，<code>dp[i]</code>，<code>dp[i - 1]</code>三个元素，因此，我们只需要三个变量<code>fibn</code>，<code>fib1</code>，<code>fib2</code>即可，从而将空间复杂度降低到O(1)。</p>
+<p><strong>时间复杂度</strong>：O(N)<br><strong>空间复杂度</strong>：O(1)</p>
+<h3 id="代码-2"><a href="#代码-2" class="headerlink" title="代码"></a>代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="type">int</span> <span class="title function_">fib</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span> || n == <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> n;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> fib1 = <span class="number">0</span>, fib2 = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">2</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            <span class="type">int</span> fibn = (fib1 + fib2) % <span class="number">1000000007</span>;</span><br><span class="line">            fib1 = fib2;</span><br><span class="line">            fib2 = fibn;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> fib2;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+  </nav>
 
 
 
@@ -428,9 +1993,17 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">46</span>
           <span class="site-state-item-name">日志</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">标签</span>
       </div>
   </nav>
 </div>
@@ -468,12 +2041,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">0k</span>
+    <span title="站点总字数">71k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1 分钟</span>
+    <span title="站点阅读时长">1:05</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>

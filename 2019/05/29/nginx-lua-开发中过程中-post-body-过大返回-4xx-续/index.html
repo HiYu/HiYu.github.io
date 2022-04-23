@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-fanruo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-fanruo.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"m.fanruo.net","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="背景随着业务发展会出现较大的 post body 数据，按照nginx + lua 开发中过程中 post body 过大返回 4xx提到的方式修改后，大部分情况下 post body 正常接收并处理落日志。但会偶现空日志的情况。 问题分析经过多轮本地和沙盒压测，复现了问题。由于在出现空日志情况是 error 日志并没留下相关信息，随后做了如下处理：  把 error 日志级别调到 debug，当">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nginx + lua 开发中过程中 post body 过大返回 4xx (续)">
+<meta property="og:url" content="https://m.fanruo.net/2019/05/29/nginx-lua-%E5%BC%80%E5%8F%91%E4%B8%AD%E8%BF%87%E7%A8%8B%E4%B8%AD-post-body-%E8%BF%87%E5%A4%A7%E8%BF%94%E5%9B%9E-4xx-%E7%BB%AD/index.html">
+<meta property="og:site_name" content="凡 若">
+<meta property="og:description" content="背景随着业务发展会出现较大的 post body 数据，按照nginx + lua 开发中过程中 post body 过大返回 4xx提到的方式修改后，大部分情况下 post body 正常接收并处理落日志。但会偶现空日志的情况。 问题分析经过多轮本地和沙盒压测，复现了问题。由于在出现空日志情况是 error 日志并没留下相关信息，随后做了如下处理：  把 error 日志级别调到 debug，当">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-05-29T01:21:00.000Z">
+<meta property="article:modified_time" content="2022-04-23T13:45:04.265Z">
+<meta property="article:author" content="Frank Yu">
+<meta property="article:tag" content="Nginx">
+<meta property="article:tag" content="OpenResty">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://m.fanruo.net/2019/05/29/nginx-lua-%E5%BC%80%E5%8F%91%E4%B8%AD%E8%BF%87%E7%A8%8B%E4%B8%AD-post-body-%E8%BF%87%E5%A4%A7%E8%BF%94%E5%9B%9E-4xx-%E7%BB%AD/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>nginx + lua 开发中过程中 post body 过大返回 4xx (续) | 凡 若</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凡 若</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">初心 读书 知新 生活</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">31</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">20</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2019/05/29/nginx-lua-%E5%BC%80%E5%8F%91%E4%B8%AD%E8%BF%87%E7%A8%8B%E4%B8%AD-post-body-%E8%BF%87%E5%A4%A7%E8%BF%94%E5%9B%9E-4xx-%E7%BB%AD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank Yu">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          nginx + lua 开发中过程中 post body 过大返回 4xx (续)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-05-29 09:21:00" itemprop="dateCreated datePublished" datetime="2019-05-29T09:21:00+08:00">2019-05-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-23 21:45:04" itemprop="dateModified" datetime="2022-04-23T21:45:04+08:00">2022-04-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Nginx/" itemprop="url" rel="index"><span itemprop="name">Nginx</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Nginx/OpenResty/" itemprop="url" rel="index"><span itemprop="name">OpenResty</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2019/05/29/nginx-lua-%E5%BC%80%E5%8F%91%E4%B8%AD%E8%BF%87%E7%A8%8B%E4%B8%AD-post-body-%E8%BF%87%E5%A4%A7%E8%BF%94%E5%9B%9E-4xx-%E7%BB%AD/" class="post-meta-item leancloud_visitors" data-flag-title="nginx + lua 开发中过程中 post body 过大返回 4xx (续)" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2019/05/29/nginx-lua-%E5%BC%80%E5%8F%91%E4%B8%AD%E8%BF%87%E7%A8%8B%E4%B8%AD-post-body-%E8%BF%87%E5%A4%A7%E8%BF%94%E5%9B%9E-4xx-%E7%BB%AD/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/05/29/nginx-lua-%E5%BC%80%E5%8F%91%E4%B8%AD%E8%BF%87%E7%A8%8B%E4%B8%AD-post-body-%E8%BF%87%E5%A4%A7%E8%BF%94%E5%9B%9E-4xx-%E7%BB%AD/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>746</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>随着业务发展会出现较大的 post body 数据，按照<a href="/2019/05/28/nginx-lua-%E5%BC%80%E5%8F%91%E4%B8%AD%E8%BF%87%E7%A8%8B%E4%B8%AD-post-body-%E8%BF%87%E5%A4%A7%E8%BF%94%E5%9B%9E-4xx/" title="nginx + lua 开发中过程中 post body 过大返回 4xx">nginx + lua 开发中过程中 post body 过大返回 4xx</a>提到的方式修改后，大部分情况下 post body 正常接收并处理落日志。但会偶现空日志的情况。</p>
+<h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><p>经过多轮本地和沙盒压测，复现了问题。由于在出现空日志情况是 error 日志并没留下相关信息，随后做了如下处理：</p>
+<ol>
+<li>把 error 日志级别调到 debug，当问题复现时，error.log 中会有客户端过早断开连接类似的日子打出。</li>
+<li>在 access 日志中添加 request_time, status,等信息，发现出现空日志时，status&#x3D;408，request_time 都比较长。</li>
+</ol>
+<p>因此，可以明确出现该问题是客户端链接超时造成的。</p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>为解决该问题，做如下优化：</p>
+<h3 id="调整超时时间，和-buffer"><a href="#调整超时时间，和-buffer" class="headerlink" title="调整超时时间，和 buffer"></a>调整超时时间，和 buffer</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">client_body_timeout 10s;</span><br><span class="line">client_header_timeout 10s;</span><br><span class="line">client_body_in_single_buffer on; #这个 directive 让 Nginx 将所有的 request body 存储在一个缓冲当中，它的默认值是 off。启用它可以优化读取 $request_body 变量时的 I/O 性能</span><br></pre></td></tr></table></figure>
+<h3 id="开启-access-buffer-和-if"><a href="#开启-access-buffer-和-if" class="headerlink" title="开启 access buffer 和 if"></a>开启 access buffer 和 if</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">log_format  main escape=json &#x27;[$log_time] [$logid] [INFO] $click_info&#x27;;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">设置变量loggable，默认<span class="variable">$loggable</span>=0;当<span class="variable">$status</span>==200时，<span class="variable">$loggable</span>=1</span></span><br><span class="line">map $status $loggable &#123;</span><br><span class="line">	200  1;</span><br><span class="line">    default 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>只有真确处理了请求才会写日志。客户端在收到 408 时，会将 body 拆分重传。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Frank Yu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://m.fanruo.net/2019/05/29/nginx-lua-%E5%BC%80%E5%8F%91%E4%B8%AD%E8%BF%87%E7%A8%8B%E4%B8%AD-post-body-%E8%BF%87%E5%A4%A7%E8%BF%94%E5%9B%9E-4xx-%E7%BB%AD/" title="nginx + lua 开发中过程中 post body 过大返回 4xx (续)">https://m.fanruo.net/2019/05/29/nginx-lua-开发中过程中-post-body-过大返回-4xx-续/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/zh-CN" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-ND</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Nginx/" rel="tag"># Nginx</a>
+              <a href="/tags/OpenResty/" rel="tag"># OpenResty</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/05/28/nginx-lua-%E5%BC%80%E5%8F%91%E4%B8%AD%E8%BF%87%E7%A8%8B%E4%B8%AD-post-body-%E8%BF%87%E5%A4%A7%E8%BF%94%E5%9B%9E-4xx/" rel="prev" title="nginx + lua 开发中过程中 post body 过大返回 4xx">
+      <i class="fa fa-chevron-left"></i> nginx + lua 开发中过程中 post body 过大返回 4xx
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/18/openresty-%E6%89%A7%E8%A1%8C%E9%98%B6%E6%AE%B5%E9%97%AE%E9%A2%98%E8%B8%A9%E5%9D%91/" rel="next" title="openresty 执行阶段问题踩坑">
+      openresty 执行阶段问题踩坑 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">问题分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">3.</span> <span class="nav-text">解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E8%B6%85%E6%97%B6%E6%97%B6%E9%97%B4%EF%BC%8C%E5%92%8C-buffer"><span class="nav-number">3.1.</span> <span class="nav-text">调整超时时间，和 buffer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E5%90%AF-access-buffer-%E5%92%8C-if"><span class="nav-number">3.2.</span> <span class="nav-text">开启 access buffer 和 if</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Frank Yu</p>
+  <div class="site-description" itemprop="description">初心 读书 知新 生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-nd.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Frank Yu</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">71k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:05</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'XfIP95Pi6OxukxBHk9FcG87i-gzGzoHsz',
+      appKey     : 'XeAkYB2bUv8IE0MYbwhsD3By',
+      placeholder: "Just go go",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : ,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
