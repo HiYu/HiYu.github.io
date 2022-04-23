@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-fanruo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-fanruo.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"m.fanruo.net","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文以 Reids 6.0 版本的 readme 为底本，并结构 unstable 分支进行整理。从 Redis 是什么？怎么构建、如何运行、体验，已经主要代码文件、数据结构等方面从一个高纬度视角介绍 Redis，以及如何阅读 Reids 源代码。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Reids 源码导读">
+<meta property="og:url" content="https://m.fanruo.net/2022/04/23/Reids-%E6%BA%90%E7%A0%81%E5%AF%BC%E8%AF%BB/index.html">
+<meta property="og:site_name" content="凡 若">
+<meta property="og:description" content="本文以 Reids 6.0 版本的 readme 为底本，并结构 unstable 分支进行整理。从 Redis 是什么？怎么构建、如何运行、体验，已经主要代码文件、数据结构等方面从一个高纬度视角介绍 Redis，以及如何阅读 Reids 源代码。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-04-23T15:36:16.000Z">
+<meta property="article:modified_time" content="2022-04-23T15:41:25.824Z">
+<meta property="article:author" content="Frank Yu">
+<meta property="article:tag" content="源码阅读">
+<meta property="article:tag" content="redis">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://m.fanruo.net/2022/04/23/Reids-%E6%BA%90%E7%A0%81%E5%AF%BC%E8%AF%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Reids 源码导读 | 凡 若</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凡 若</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">初心 读书 知新 生活</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">31</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">20</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">45</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2022/04/23/Reids-%E6%BA%90%E7%A0%81%E5%AF%BC%E8%AF%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank Yu">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Reids 源码导读
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-04-23 23:36:16 / 修改时间：23:41:25" itemprop="dateCreated datePublished" datetime="2022-04-23T23:36:16+08:00">2022-04-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">源码阅读</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+            <div class="post-description">本文以 Reids 6.0 版本的 readme 为底本，并结构 unstable 分支进行整理。从 Redis 是什么？怎么构建、如何运行、体验，已经主要代码文件、数据结构等方面从一个高纬度视角介绍 Redis，以及如何阅读 Reids 源代码。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本 README 只是一个快速入门文档。你可以在<a target="_blank" rel="noopener" href="https://redis.io/">redis.io</a>找到更详细的文档。</p>
+<h1 id="什么是-Redis？"><a href="#什么是-Redis？" class="headerlink" title="什么是 Redis？"></a>什么是 Redis？</h1><p>Redis 通常被称为数据结构服务器。这意味着 Redis 通过一组命令提供对可变数据结构的访问，这些命令使用带有 TCP 套接字和简单协议的服务器-客户端模型发送。因此不同的进程可以以共享的方式查询和修改相同的数据结构。<br>Redis 中实现的数据结构有一些特殊的属性：</p>
+<ul>
+<li>虽然 Redis 通常被当做内存数据库，读写操作都是在内存中进行的，但是 Redis 也提供了将数据同步到磁盘的功能。这意味着 Redis 速度很快，但它也是非易失的。</li>
+<li>Redis 数据结构的实现强调内存效率（时间&amp;空间），因此与使用高级编程语言实现的相同数据结构相比，Redis 内部的数据结构可能会使用更少的内存。</li>
+<li>Redis 提供了许多数据库软件常见特性，例如复制、可调整级别的持久性、集群和高可用性。</li>
+</ul>
+<p>另一个很好的例子是将 Redis 视为更复杂的 memcached 版本，其中的操作不仅是 <code>SET </code>和<code> GET</code>，而且还适用于复杂数据类型（如<code> List</code>、<code>Set</code>、有序数据结构等）的操作。</p>
+<p>如果您想了解更多信息，可以参阅下面链接：</p>
+<ul>
+<li>Redis 数据类型简介。 <a target="_blank" rel="noopener" href="https://redis.io/topics/data-types-intro">https://redis.io/topics/data-types-intro</a></li>
+<li>直接在浏览器中试用 Redis。 <a target="_blank" rel="noopener" href="https://try.redis.io/">https://try.redis.io</a></li>
+<li>Redis 命令的完整列表。 <a target="_blank" rel="noopener" href="https://redis.io/commands">https://redis.io/commands</a></li>
+</ul>
+<p>Redis 官方文档中还有更多内容。 <a target="_blank" rel="noopener" href="https://redis.io/documentation">https://redis.io/documentation</a></p>
+<h2 id="构建-Redis"><a href="#构建-Redis" class="headerlink" title="构建 Redis"></a>构建 Redis</h2><p>Redis 可以在 Linux、OSX、OpenBSD、NetBSD、FreeBSD 上编译和使用。我们支持大端和小端架构，以及 32 位和 64 位系统。<br>Redis 可以在 Solaris 派生系统（例如 SmartOS）上编译，但并不保证 Redis 在这些系统上和在 Linux、OSX 、 *BSD 上工作得一样好。</p>
+<h3 id="它很简单："><a href="#它很简单：" class="headerlink" title="它很简单："></a>它很简单：</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">make</span></span><br></pre></td></tr></table></figure>
+<p>要使用 TLS 支持进行构建，您需要 OpenSSL 开发库（例如 Debian&#x2F;Ubuntu 上的 libssl-dev）并运行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">make BUILD_TLS=<span class="built_in">yes</span></span></span><br></pre></td></tr></table></figure>
+
+<p>要使用 systemd 支持构建，您需要 systemd 开发库（例如 Debian&#x2F;Ubuntu 上的 libsystemd-dev 或 CentOS 上的 systemd-devel）并运行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">make USE_SYSTEMD=<span class="built_in">yes</span></span></span><br></pre></td></tr></table></figure>
+
+<p>要将后缀附加到 Redis 程序名称，请使用：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">make PROG_SUFFIX=<span class="string">&quot;-alt&quot;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>可以使用以下命令运行 32 位 Redis 二进制文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">make 32bit</span></span><br></pre></td></tr></table></figure>
+
+<p>构建 Redis 后，最好使用以下方法对其进行测试：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">make <span class="built_in">test</span></span></span><br></pre></td></tr></table></figure>
+
+<p>构建了 TLS，则在启用 TLS 的情况下运行测试（您将需要安装 <code>tcl-tls</code>）：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">./utils/gen-test-certs.sh</span></span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">./runtest --tls</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="修复依赖项或缓存构建选项等构建问题"><a href="#修复依赖项或缓存构建选项等构建问题" class="headerlink" title="修复依赖项或缓存构建选项等构建问题"></a>修复依赖项或缓存构建选项等构建问题</h3><p>Redis 有一些依赖项，它们包含在 <code>deps</code> 目录中。即使依赖项的源代码中的某些内容发生更改，<code>make</code> 也不会自动重建依赖项。</p>
+<p>当您使用 <code>git pull</code> 更新源代码或以任何其他方式修改依赖关系树中的代码时，请确保使用以下命令来真正清理所有内容并从头开始重建：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">make disclean</span></span><br></pre></td></tr></table></figure>
+
+<p>这将清理：<code>jemalloc</code>、<code>lua</code>、<code>hiredis</code>、<code>linenoise</code>。</p>
+<p>此外，如果您强制使用某些构建选项，如 32 位包、无 C 编译器优化（用于调试目的）以及其他类似的构建时间选项，这些选项将无限期缓存，直到您发出 <code>make distclean</code> 命令。</p>
+<h3 id="修复构建-32-位二进制文件的问题"><a href="#修复构建-32-位二进制文件的问题" class="headerlink" title="修复构建 32 位二进制文件的问题"></a>修复构建 32 位二进制文件的问题</h3><p>如果在使用 32 位目标构建 Redis 后，又需要使用 64 位目标重新构建它，或者相反，您需要在 Redis 发行版的根目录中执行 <code>make distclean</code>。</p>
+<p>如果在尝试构建 Redis 的 32 位二进制文件时出现构建错误，请尝试以下步骤：</p>
+<ul>
+<li>安装软件包 libc6-dev-i386（也可以尝试 <code>g++-multilib</code>）。</li>
+</ul>
+<p>尝试使用以下命令行而不是<code> make 32bit</code>：<code>make CFLAGS=&quot;-m32 -march=native&quot; LDFLAGS=&quot;-m32&quot;</code></p>
+<h3 id="分配器"><a href="#分配器" class="headerlink" title="分配器"></a>分配器</h3><p>在构建 Redis 时选择非默认内存分配器是通过设置 <code>MALLOC </code>环境变量来完成的。默认情况下，Redis 是针对<code> libc malloc</code> 编译和链接的，但<code>jemalloc</code>是 Linux 系统上的默认设置。之所以选择此默认值，是因为 <code>jemalloc</code> 已被证明比<code> libc malloc</code> 具有更少的碎片问题。</p>
+<p>要强制针对 <code>libc malloc </code>进行编译，请使用：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">make MALLOC=libc</span></span><br></pre></td></tr></table></figure>
+
+
+<p>要在 Mac OS X 系统上针对 jemalloc 进行编译，请使用：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">make MALLOC=jemalloc</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="详细构建"><a href="#详细构建" class="headerlink" title="详细构建"></a>详细构建</h3><p>默认情况下，Redis 将使用用户友好的彩色输出进行构建。如果要查看更详细的输出，请使用以下命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">make V=1</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="运行-Redis"><a href="#运行-Redis" class="headerlink" title="运行 Redis"></a>运行 Redis</h2><h3 id="要使用默认配置运行-Redis"><a href="#要使用默认配置运行-Redis" class="headerlink" title="要使用默认配置运行 Redis"></a>要使用默认配置运行 Redis</h3><p>只需键入：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash"><span class="built_in">cd</span> src</span></span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">./redis-server</span></span><br></pre></td></tr></table></figure>
+
+<p>如果要提供 redis.conf，则必须使用附加参数（配置文件的路径）运行它：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash"><span class="built_in">cd</span> src</span></span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">./redis-server /path/to/redis.conf</span></span><br></pre></td></tr></table></figure>
+
+<p>可以通过使用命令行直接将参数作为选项传递来更改 Redis 配置。例如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">./redis-server --port 9999 --replicaof 127.0.0.1 6379</span></span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">./redis-server /etc/redis/6379.conf --loglevel debug</span></span><br></pre></td></tr></table></figure>
+
+<p>redis.conf 中的所有选项也支持作为使用命令行的选项，名称完全相同。</p>
+<h3 id="使用-TLS-运行-Redis"><a href="#使用-TLS-运行-Redis" class="headerlink" title="使用 TLS 运行 Redis"></a>使用 TLS 运行 Redis</h3><p>有关如何将 Redis 与 <code>TLS</code> 结合使用的更多信息，请参阅 <code>TLS.md</code> 文件。</p>
+<h2 id="体验-Redis"><a href="#体验-Redis" class="headerlink" title="体验 Redis"></a>体验 Redis</h2><p>你可以使用 redis-cli 来体验 Redis。启动一个 redis-server 实例，然后在另一个终端中尝试以下操作：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash"><span class="built_in">cd</span> src</span></span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">./redis-cli</span></span><br><span class="line"><span class="meta prompt_">redis&gt; </span><span class="language-bash">ping</span></span><br><span class="line">PONG</span><br><span class="line"><span class="meta prompt_">redis&gt; </span><span class="language-bash"><span class="built_in">set</span> foo bar</span></span><br><span class="line">OK</span><br><span class="line"><span class="meta prompt_">redis&gt; </span><span class="language-bash">get foo</span></span><br><span class="line">&quot;bar&quot;</span><br><span class="line"><span class="meta prompt_">redis&gt; </span><span class="language-bash">incr mycounter</span></span><br><span class="line">(integer) 1</span><br><span class="line"><span class="meta prompt_">redis&gt; </span><span class="language-bash">incr mycounter</span></span><br><span class="line">(integer) 2</span><br><span class="line"><span class="meta prompt_">redis&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>您可以在 <a target="_blank" rel="noopener" href="https://redis.io/commands">https://redis.io/commands</a> 找到所有可用命令的列表。</p>
+<h2 id="安装-Redis"><a href="#安装-Redis" class="headerlink" title="安装 Redis"></a>安装 Redis</h2><p>要将 Redis 二进制文件安装到 <code>/usr/local/bin</code>，只需使用：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">make install</span></span><br></pre></td></tr></table></figure>
+
+<p>如果您希望使用不同的目的地，您可以使用<code> make PREFIX=/some/other/directory install</code>。</p>
+<p><code>Make install</code> 只会在您的系统中安装二进制文件，但不会在适当的位置配置初始化脚本和配置文件。如果仅仅想体验一下 Redis，则不需要这样做。但是如果想在生存环境正确的安装它，官方为为 Ubuntu 和 Debian 系统提供了一个脚本可以执行此操作：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash"><span class="built_in">cd</span> utils</span></span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">./install_server.sh</span></span><br></pre></td></tr></table></figure>
+
+<p>注意：<code>install_server.sh</code> 不能在 Mac OSX 上运行；它仅适用于 Linux。</p>
+<p>该脚本将询问几个问题，并完成相关配置设置，然后作为守护进程启动 Redis。该后台守护程序将在系统重新启动时重新启动。</p>
+<p>可以使用名为<code>/etc/init.d/redis_&lt;portnumber&gt;</code>的脚本来停止和启动 Redis，例如 <code>/etc/init.d/redis_6379</code>。</p>
+<h2 id="代码贡献"><a href="#代码贡献" class="headerlink" title="代码贡献"></a>代码贡献</h2><p>注意：通过以任何形式向 Redis 项目贡献代码，包括通过 Github 发送拉取请求、通过私人电子邮件或公共讨论组发送代码片段或补丁，即表示您同意根据 BSD 许可条款（您可以在 Redis 源代码分发包中的 COPYING 文件中找到）发布您的代码。</p>
+<p>有关详细信息，请参阅此源分发中的 CONTRIBUTING 文件。</p>
+<h3 id="Redis-内部结构"><a href="#Redis-内部结构" class="headerlink" title="Redis 内部结构"></a>Redis 内部结构</h3><p>如果您正在阅读此自述文件，您可能在 Github 页面前面，或者您只是解压了 Redis 分发 tar 包。在这两种情况下，你基本上离源代码只有一步之遥，所以在这里我们解释一下 Redis 源代码的布局、每个文件中的大致概念、Redis 服务器内部最重要的功能和结构等等。这里将所有讨论保持在高层次，而不深入细节，因为否则该文档会很大，而且代码库会不断变化，但总体思路应该是了解更多内容的良好起点。此外，大部分代码都经过大量注释并且易于理解。</p>
+<h3 id="源代码布局"><a href="#源代码布局" class="headerlink" title="源代码布局"></a>源代码布局</h3><p>Redis 根目录只包含这个 <code>README</code>、调用<code> src</code> 目录中真正的 <code>Makefile</code> 的 <code>Makefile</code> 以及 Redis 和 Sentinel 的示例配置。以及一些用于执行 Redis、Redis Cluster 和 Redis Sentinel 单元测试的 shell 脚本，它们在 <code>tests </code>目录中实现。</p>
+<p>根目录内有以下重要目录：</p>
+<ul>
+<li><code>src</code>：包含 Redis 实现，用 C 编写。</li>
+<li><code>tests</code>：包含单元测试，在 Tcl 中实现。</li>
+<li><code>deps</code>：包含 Redis 使用的库。编译 Redis 所需的一切依赖都在这个目录中；系统只需要提供 libc、一个 POSIX 兼容的接口和一个 C 编译器。值得注意的是 <code>deps</code> 包含一个<code>jemalloc</code>的副本，它是 Linux 下 Redis 的默认分配器。请注意，在 <code>deps</code> 下还有一些东西是从 Redis 项目开始的，但主存储库不是<code> redis/redis</code>。</li>
+</ul>
+<p>还有一些目录，但它们对于我们在这里的目标并不是很重要。我们将主要关注包含 Redis 实现的 <code>src</code>，探索每个文件中的内容。文件展示的顺序是为了逐步揭示不同层次的复杂性而遵循的逻辑顺序。</p>
+<p>注意：最近 Redis 被重构了很多。函数名和文件名已更改，因此您可能会发现此文档更接近地反映了不稳定的分支。例如，在 Redis 3.0 中，<code>server.c</code> 和<code> server.h</code> 文件被命名为<code> redis.c</code> 和 <code>redis.h</code>。但是整体结构是一样的。请记住，所有新的开发和拉取请求都应该针对不稳定的分支执行。</p>
+<h3 id="server-h"><a href="#server-h" class="headerlink" title="server.h"></a>server.h</h3><p>了解程序如何工作的最简单方法是了解它使用的数据结构。因此，我们将从 Redis 的主头文件 <code>server.h </code>开始。</p>
+<p>所有的服务器配置和通常所有的共享状态都定义在一个名为 <code>server</code> 的全局结构中，类型为 <code>struct redisServer</code>。此结构中的几个重要字段是：</p>
+<ul>
+<li><code>server.db</code> 是存储数据的 Redis 数据库数组。</li>
+<li><code>server.commands</code> 是命令表。</li>
+<li><code>server.clients</code> 是连接到服务器的客户端的链表。</li>
+<li><code>server.master</code> 是一个特殊的客户端，如果实例是副本，则为 master。</li>
+</ul>
+<p>还有很多其他领域。大多数字段直接在结构定义中进行注释。</p>
+<p>另一个重要的 Redis 数据结构是定义客户端的数据结构。过去它被称为<code>redisClient</code>，现在只是<code>client</code>。该结构有很多字段，这里我们只展示主要的：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">client</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> fd;</span><br><span class="line">  sds querybuf;</span><br><span class="line">  <span class="type">int</span> argc;</span><br><span class="line">  robj **argv;</span><br><span class="line">  redisDb *db;</span><br><span class="line">  <span class="type">int</span> flags;</span><br><span class="line">  <span class="built_in">list</span> *reply;</span><br><span class="line">  <span class="type">char</span> buf[PROTO_REPLY_CHUNK_BYTES];</span><br><span class="line">  <span class="comment">//... many other fields ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>客户端结构定义了一个连接的客户端：</p>
+<ul>
+<li><code>fd</code> 字段是客户端套接字文件描述符。</li>
+<li><code>argc</code> 和 <code>argv</code> 填充了客户端正在执行的命令，因此实现给定 Redis 命令的函数可以读取参数。</li>
+<li><code>querybuf</code> 缓存客户端的请求的缓冲区，这些请求由 Redis 服务器根据 Redis 协议进行解析，并通过调用客户端正在执行的命令实现来执行。</li>
+<li><code>reply</code> 和 <code>buf</code> 是动态和静态缓冲区，用于累积服务器发送给客户端的回复。一旦文件描述符可写，这些缓冲区就会增量写入套接字。</li>
+</ul>
+<p>正如您在上面的客户端结构中所见，命令中的参数被描述为 <code>robj </code>结构。下面是完整的<code>robj</code>结构，它定义了一个 <em>Redis object</em>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">redisObject</span> &#123;</span></span><br><span class="line">  <span class="type">unsigned</span> type:<span class="number">4</span>;</span><br><span class="line">  <span class="type">unsigned</span> encoding:<span class="number">4</span>;</span><br><span class="line">  <span class="type">unsigned</span> lru:LRU_BITS; <span class="comment">/* lru time (relative to server.lruclock) */</span></span><br><span class="line">  <span class="type">int</span> refcount;</span><br><span class="line">  <span class="type">void</span> *ptr;</span><br><span class="line">&#125; robj;</span><br></pre></td></tr></table></figure>
+
+<p>基本上，这种结构可以表示所有基本的 Redis 数据类型，如字符串、列表、集合、排序集合等。有趣的是它有一个<code>type</code>字段，因此可以知道给定对象的类型，以及一个<code>refcount</code>，这样可以在多个地方引用同一个对象，而无需多次分配。最后，<code>ptr</code> 字段指向对象的实际表示，即使对于相同的类型，它也可能会有所不同，具体取决于所使用的<code>encoding</code>。</p>
+<p>Redis 对象在 Redis 内部结构中被广泛使用，但是为了避免间接访问的开销，最近在许多地方我们只使用未包装在 Redis 对象中的普通动态字符串。</p>
+<h3 id="server-c"><a href="#server-c" class="headerlink" title="server.c"></a>server.c</h3><p>这是 Redis 服务器的入口点，其中定义了 <code>main()</code> 函数。以下是启动 Redis 服务器的最重要步骤。</p>
+<ul>
+<li><code>initServerConfig()</code> 设置服务器结构的默认值。</li>
+<li><code>initServer()</code> 分配操作、设置侦听套接字等所需的数据结构。</li>
+<li><code>aeMain()</code> 启动监听新连接的事件循环。</li>
+</ul>
+<p>事件循环会定期调用两个特殊函数：</p>
+<ul>
+<li><code>serverCron()</code> 定期调用（根据 <code>server.hz</code> 频率），并执行必须定期执行的任务，例如检查客户端是否超时。</li>
+<li>每次触发事件循环时都会调用 <code>beforeSleep()</code>，Redis 服务了一些请求，然后返回到事件循环中。</li>
+</ul>
+<p>在 <code>server.c</code> 中，您可以找到处理 Redis 服务器其他重要事项的代码：</p>
+<ul>
+<li><code>call()</code> 用于在给定客户端的上下文中调用给定命令。</li>
+<li><code>activeExpireCycle()</code> 通过 <code>EXPIRE</code> 命令处理具有生存时间的键的删除。</li>
+<li><code>freeMemoryIfNeeded()</code> 在执行新的写入命令，但根据 <code>maxmemory </code>指令，判断Redis 内存不足时调用。</li>
+<li>全局变量 <code>redisCommandTable</code> 定义了所有 Redis 命令，指定命令的名称、实现命令的函数、所需的参数数量以及每个命令的其他属性。</li>
+</ul>
+<h3 id="network-c"><a href="#network-c" class="headerlink" title="network.c"></a>network.c</h3><p>该文件定义了所有带有客户端、主服务器和副本（在 Redis 中只是特殊客户端）的 I&#x2F;O 功能：</p>
+<ul>
+<li><code>createClient()</code> 分配并初始化一个新客户端。</li>
+<li>命令实现逻辑调用 <code>addReply*() </code>系列函数来将数据附加到客户端结构，这些数据将作为对执行给定命令的回复传输给客户端。</li>
+<li><code>writeToClient() </code>由<em>可写事件处理程序</em> <code>sendReplyToClient() </code>调用,将输出缓冲区中数据传输到客户端。</li>
+<li><code>readQueryFromClient() </code>是<em>可读的事件处理程序</em>，将从客户端读取的数据缓存到查询缓冲区中。</li>
+<li><code>processInputBuffer() </code>是根据 Redis 协议解析客户端查询缓冲区的入口点。一旦准备好处理命令，它就会调用在 <code>server.c </code>中定义的 <code>processCommand()</code> 以实际执行命令。</li>
+<li><code>freeClient()</code> 释放、断开和删除客户端。</li>
+</ul>
+<h3 id="aof-c-和-rdb-c"><a href="#aof-c-和-rdb-c" class="headerlink" title="aof.c 和 rdb.c"></a>aof.c 和 rdb.c</h3><p>从名称中您可以猜到，这些文件实现了 Redis 的<code> RDB</code> 和 <code>AOF</code> 持久性。 Redis 使用基于 <code>fork()</code> 系统调用的持久性模型，以便创建与主 Redis 线程具有相同（共享）内存内容的线程。此辅助线程将内存内容转储到磁盘。 <code>rdb.c</code> 使用它在磁盘上创建快照，<code>aof.c</code> 使用它来在仅追加文件变得太大时执行 <code>AOF</code> 重写。</p>
+<p><code>aof.c</code> 中的实现具有附加功能，以便实现一个 API，该 API 允许命令在客户端执行它们时将新命令附加到 <code>AOF</code> 文件中。</p>
+<p>在 server.c 中定义的 call() 函数负责调用这些函数，这些函数又会将命令写入 AOF。</p>
+<h3 id="db-c"><a href="#db-c" class="headerlink" title="db.c"></a>db.c</h3><p>某些 Redis 命令对特定数据类型进行操作；其他都是通用命令。通用命令的示例是 DEL 和 EXPIRE。它们作用于键而不是专门作用于它们的值。所有这些通用命令都在 <code>db.c</code> 中定义。</p>
+<p>此外，<code>db.c</code> 实现了一个 API，以便在不直接访问内部数据结构的情况下对 Redis 数据集执行某些操作。</p>
+<p>在许多命令实现中使用的 db.c 中最重要的函数如下：</p>
+<ul>
+<li><code>lookupKeyRead() </code>和 <code>lookupKeyWrite()</code> 用于获取指向与给定键关联的值的指针，如果该键不存在，则为 <code>NULL</code>。</li>
+<li><code>dbAdd()</code> 及其更高级别的对应<code>setKey()</code>在 Redis 数据库中创建一个新键。</li>
+<li><code>dbDelete()</code> 删除键及其关联值。</li>
+<li><code>emptyDb()</code> 删除整个单个数据库或所有已定义的数据库。</li>
+</ul>
+<p>该文件的其余部分实现了向客户端公开的通用命令。</p>
+<h3 id="object-c"><a href="#object-c" class="headerlink" title="object.c"></a>object.c</h3><p>已经描述了定义 Redis 对象的 robj 结构。在<code>object.c</code>中，有所有在基本层面上对 Redis 对象进行操作的函数，例如分配新对象、处理引用计数等的函数。此文件中的显着功能：</p>
+<ul>
+<li><code>incrRefCount()</code> 和 <code>decrRefCount() </code>用于增加或减少对象引用计数。当它下降到 <code>0 </code>时，对象最终被释放。</li>
+<li><code>createObject() </code>分配一个新对象。还有专门的函数来分配具有特定内容的字符串对象，例如 <code>createStringObjectFromLongLong()</code> 和类似函数。</li>
+<li>该文件还实现了 <code>OBJECT</code> 命令。</li>
+</ul>
+<h3 id="replication-c"><a href="#replication-c" class="headerlink" title="replication.c"></a>replication.c</h3><p>这是 Redis 中最复杂的文件之一，建议在对代码库的其余部分熟悉之后再处理它。在这个文件中，有 Redis 的 <code>master</code> 和 <code>replica</code> 角色的实现。</p>
+<ul>
+<li>该文件中最重要的函数之一是 <code>replicationFeedSlaves()</code>，它向代表连接到主节点的副本实例的客户端写入命令，以便副本可以获取客户端执行的写入操作：这样他们的数据集将与<code>master</code>保持一致。</li>
+<li>该文件还实现了 <code>SYNC</code> 和 <code>PSYNC</code> 命令，这些命令用于在主服务器和副本之间执行第一次同步，或者在断开连接后继续复制。</li>
+</ul>
+<h3 id="其他-C-文件"><a href="#其他-C-文件" class="headerlink" title="其他 C 文件"></a>其他 C 文件</h3><ul>
+<li><code>t_hash.c</code>、<code>t_list.c</code>、<code>t_set.c</code>、<code>t_string.c</code>、<code>t_zset.c</code> 和 <code>t_stream.c</code> 包含 Redis 数据类型的实现。它们既实现了访问给定数据类型的 API，又实现了这些数据类型的客户端命令实现。</li>
+<li><code>ae.c</code> 实现了 Redis 事件循环，它是一个易于阅读和理解的自包含库。</li>
+<li><code>sds.c</code> 是 Redis 字符串库，查看 <a target="_blank" rel="noopener" href="http://github.com/antirez/sds">http://github.com/antirez/sds</a> 了解更多信息。</li>
+<li><code>anet.c</code> 网络库，与内核公开的原始接口相比，它以更简单的方式使用 POSIX 网络。</li>
+<li><code>dict.c</code> 是一个非阻塞哈希表的实现，它以增量方式<code>rehash</code>。</li>
+<li><code>scripting.c</code> 实现 Lua 脚本。它是完全独立的，并且与 Redis 实现的其余部分隔离开来，如果您熟悉 Lua API，就很容易理解。</li>
+<li><code>cluster.c</code> 实现了 Redis 集群。可能只有在非常熟悉 Redis 代码库的其余部分之后才能阅读。如果你想阅读 <code>cluster.c</code> 确保阅读 Redis Cluster 规范。</li>
+</ul>
+<h3 id="Redis-命令剖析"><a href="#Redis-命令剖析" class="headerlink" title="Redis 命令剖析"></a>Redis 命令剖析</h3><p>所有 Redis 命令的定义方式如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">foobarCommand</span><span class="params">(client *c)</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;%s&quot;</span>,c-&gt;argv[<span class="number">1</span>]-&gt;ptr); <span class="comment">/* Do something with the argument. */</span></span><br><span class="line">  addReply(c,shared.ok); <span class="comment">/* Reply something to the client. */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后在命令表中的 <code>server.c</code> 中引用该命令：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="string">&quot;foobar&quot;</span>,foobarCommand,<span class="number">2</span>,<span class="string">&quot;rtF&quot;</span>,<span class="number">0</span>,<span class="literal">NULL</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>在上面的示例中，<code>2 </code>是命令采用的参数数量，而<code>&quot;rtF&quot;</code>是命令标志，如 <code>server.c</code> 内的命令表顶部注释中所述。</p>
+<p>命令以某种方式运行后，它会向客户端返回一个回复，通常使用 <code>addReply()</code> 或<code>networking.c </code>中定义的类似函数。</p>
+<p>Redis 源代码中有大量命令实现，可以作为实际命令实现的示例。编写一些玩具命令可能是熟悉代码库的一个很好的练习。</p>
+<p>还有很多其他的文件这里没有描述，但是把所有的东西都覆盖了是没有用的。我们只是想帮助您完成第一步。最终你会找到自己的方式支持 Redis 代码库 :-)</p>
+<p>Enjoy！</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Frank Yu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://m.fanruo.net/2022/04/23/Reids-%E6%BA%90%E7%A0%81%E5%AF%BC%E8%AF%BB/" title="Reids 源码导读">https://m.fanruo.net/2022/04/23/Reids-源码导读/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/zh-CN" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-ND</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" rel="tag"># 源码阅读</a>
+              <a href="/tags/redis/" rel="tag"># redis</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/05/01/redis-%E6%BA%90%E7%A0%81%E6%BA%90%E6%96%87%E4%BB%B6%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E/" rel="prev" title="redis 源码源文件文件说明">
+      <i class="fa fa-chevron-left"></i> redis 源码源文件文件说明
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-Redis%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">什么是 Redis？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA-Redis"><span class="nav-number">1.1.</span> <span class="nav-text">构建 Redis</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%83%E5%BE%88%E7%AE%80%E5%8D%95%EF%BC%9A"><span class="nav-number">1.1.1.</span> <span class="nav-text">它很简单：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E5%A4%8D%E4%BE%9D%E8%B5%96%E9%A1%B9%E6%88%96%E7%BC%93%E5%AD%98%E6%9E%84%E5%BB%BA%E9%80%89%E9%A1%B9%E7%AD%89%E6%9E%84%E5%BB%BA%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.2.</span> <span class="nav-text">修复依赖项或缓存构建选项等构建问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E5%A4%8D%E6%9E%84%E5%BB%BA-32-%E4%BD%8D%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.3.</span> <span class="nav-text">修复构建 32 位二进制文件的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E9%85%8D%E5%99%A8"><span class="nav-number">1.1.4.</span> <span class="nav-text">分配器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%A6%E7%BB%86%E6%9E%84%E5%BB%BA"><span class="nav-number">1.1.5.</span> <span class="nav-text">详细构建</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C-Redis"><span class="nav-number">1.2.</span> <span class="nav-text">运行 Redis</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A6%81%E4%BD%BF%E7%94%A8%E9%BB%98%E8%AE%A4%E9%85%8D%E7%BD%AE%E8%BF%90%E8%A1%8C-Redis"><span class="nav-number">1.2.1.</span> <span class="nav-text">要使用默认配置运行 Redis</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-TLS-%E8%BF%90%E8%A1%8C-Redis"><span class="nav-number">1.2.2.</span> <span class="nav-text">使用 TLS 运行 Redis</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%93%E9%AA%8C-Redis"><span class="nav-number">1.3.</span> <span class="nav-text">体验 Redis</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-Redis"><span class="nav-number">1.4.</span> <span class="nav-text">安装 Redis</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E8%B4%A1%E7%8C%AE"><span class="nav-number">1.5.</span> <span class="nav-text">代码贡献</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis-%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="nav-number">1.5.1.</span> <span class="nav-text">Redis 内部结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E4%BB%A3%E7%A0%81%E5%B8%83%E5%B1%80"><span class="nav-number">1.5.2.</span> <span class="nav-text">源代码布局</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#server-h"><span class="nav-number">1.5.3.</span> <span class="nav-text">server.h</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#server-c"><span class="nav-number">1.5.4.</span> <span class="nav-text">server.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#network-c"><span class="nav-number">1.5.5.</span> <span class="nav-text">network.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#aof-c-%E5%92%8C-rdb-c"><span class="nav-number">1.5.6.</span> <span class="nav-text">aof.c 和 rdb.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#db-c"><span class="nav-number">1.5.7.</span> <span class="nav-text">db.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#object-c"><span class="nav-number">1.5.8.</span> <span class="nav-text">object.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#replication-c"><span class="nav-number">1.5.9.</span> <span class="nav-text">replication.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96-C-%E6%96%87%E4%BB%B6"><span class="nav-number">1.5.10.</span> <span class="nav-text">其他 C 文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis-%E5%91%BD%E4%BB%A4%E5%89%96%E6%9E%90"><span class="nav-number">1.5.11.</span> <span class="nav-text">Redis 命令剖析</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Frank Yu</p>
+  <div class="site-description" itemprop="description">初心 读书 知新 生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HiYu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HiYu" rel="noopener" target="_blank">GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yourname@gmail.com" title="E-Mail → mailto:yourname@gmail.com" rel="noopener" target="_blank">E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-nd.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Frank Yu</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">79k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:12</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
