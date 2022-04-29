@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-fanruo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-fanruo.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"m.fanruo.net","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文从为第一部分，主要介绍架构设计的历史背景、相关概念、目的、复杂度、原则以及流程。从整体上对架构设计有所了解">
+<meta property="og:type" content="article">
+<meta property="og:title" content="架构设计之一——基础架构">
+<meta property="og:url" content="https://m.fanruo.net/2022/04/29/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%B8%80%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:site_name" content="凡 若">
+<meta property="og:description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文从为第一部分，主要介绍架构设计的历史背景、相关概念、目的、复杂度、原则以及流程。从整体上对架构设计有所了解">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-04-29T13:18:46.000Z">
+<meta property="article:modified_time" content="2022-04-29T14:05:16.052Z">
+<meta property="article:author" content="Frank Yu">
+<meta property="article:tag" content="架构设计">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://m.fanruo.net/2022/04/29/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%B8%80%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>架构设计之一——基础架构 | 凡 若</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">凡 若</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">初心 读书 知新 生活</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">32</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">21</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">46</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2022/04/29/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%B8%80%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank Yu">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          架构设计之一——基础架构
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-04-29 21:18:46 / 修改时间：22:05:16" itemprop="dateCreated datePublished" datetime="2022-04-29T21:18:46+08:00">2022-04-29</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" itemprop="url" rel="index"><span itemprop="name">架构设计</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+            <div class="post-description">导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文从为第一部分，主要介绍架构设计的历史背景、相关概念、目的、复杂度、原则以及流程。从整体上对架构设计有所了解</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="架构设计的历史背景"><a href="#架构设计的历史背景" class="headerlink" title="架构设计的历史背景"></a>架构设计的历史背景</h1><h2 id="机器语言（1940-年之前）"><a href="#机器语言（1940-年之前）" class="headerlink" title="机器语言（1940 年之前）"></a>机器语言（1940 年之前）</h2><p>机器语言的主要问题是三难：太难写、太难读、太难改！</p>
+<h2 id="汇编语言（20-世纪-40-年代）"><a href="#汇编语言（20-世纪-40-年代）" class="headerlink" title="汇编语言（20 世纪 40 年代）"></a>汇编语言（20 世纪 40 年代）</h2><p>本质上还是面向机器的，因为写汇编语言需要我们精确了解计算机底层的知识</p>
+<h2 id="高级语言（20-世纪-50-年代）"><a href="#高级语言（20-世纪-50-年代）" class="headerlink" title="高级语言（20 世纪 50 年代）"></a>高级语言（20 世纪 50 年代）</h2><h3 id="第一次软件危机与结构化程序设计（20-世纪-60-年代-20-世纪-70-年代）"><a href="#第一次软件危机与结构化程序设计（20-世纪-60-年代-20-世纪-70-年代）" class="headerlink" title="第一次软件危机与结构化程序设计（20 世纪 60 年代~20 世纪 70 年代）"></a>第一次软件危机与结构化程序设计（20 世纪 60 年代~20 世纪 70 年代）</h3><ul>
+<li>典型表现有软件质量低下、项目无法如期完成、项目严重超支等，因为软件而导致的重大事故时有发生。</li>
+<li>软件工程同样无法根除软件危机，只能在一定程度上缓解软件危机。</li>
+<li>结构化程序设计的主要特点是抛弃 goto 语句，采取“自顶向下、逐步细化、模块化”的指导思想。结构化程序设计本质上还是一种面向过程的设计思想，但通过“自顶向下、逐步细化、模块化”的方法，将软件的复杂度控制在一定范围内，从而从整体上降低了软件开发的复杂度。<h3 id="第二次软件危机与面向对象（20-世纪-80-年代）"><a href="#第二次软件危机与面向对象（20-世纪-80-年代）" class="headerlink" title="第二次软件危机与面向对象（20 世纪 80 年代）"></a>第二次软件危机与面向对象（20 世纪 80 年代）</h3></li>
+<li>第二次软件危机的根本原因还是在于软件生产力远远跟不上硬件和业务的发展。第一次软件危机的根源在于软件的“逻辑”变得非常复杂，而第二次软件危机主要体现在软件的“扩展”变得非常复杂。</li>
+<li>结构化程序设计虽然能够解决（也许用“缓解”更合适）软件逻辑的复杂性，但是对于业务变化带来的软件扩展却无能为力，软件领域迫切希望找到新的银弹来解决软件危机，在这种背景下，面向对象的思想开始流行起来。<h2 id="软件架构的历史背景"><a href="#软件架构的历史背景" class="headerlink" title="软件架构的历史背景"></a>软件架构的历史背景</h2>随着软件系统规模的增加，计算相关的算法和数据结构不再构成主要的设计问题；当系统由许多部分组成时，整个系统的组织，也就是所说的“软件架构”，导致了一系列新的设计问题。</li>
+<li>系统规模庞大，内部耦合严重，开发效率低；</li>
+<li>系统耦合严重，牵一发动全身，后续修改和扩展困难；</li>
+<li>系统逻辑复杂，容易出问题，出问题后很难排查和修复</li>
+</ul>
+<h1 id="三组容易混淆的概念"><a href="#三组容易混淆的概念" class="headerlink" title="三组容易混淆的概念"></a>三组容易混淆的概念</h1><h2 id="系统与子系统"><a href="#系统与子系统" class="headerlink" title="系统与子系统"></a>系统与子系统</h2><h3 id="系统"><a href="#系统" class="headerlink" title="系统"></a>系统</h3><ul>
+<li>系统泛指由一群有关联的个体组成，根据某种规则运作，能完成个别元件不能单独完成的工作的群体。它的意思是“总体”“整体”或“联盟”</li>
+<li>关系：系统是由一群有关联的个体组成的，没有关联的个体堆在一起不能成为一个系统。</li>
+<li>规则：系统内的个体需要按照指定的规则运作，而不是单个个体各自为政。规则规定了系统内个体分工和协作的方式。</li>
+<li>能力：系统能力与个体能力有本质的差别，系统能力不是个体能力之和，而是产生了新的能力。</li>
+</ul>
+<h3 id="子系统"><a href="#子系统" class="headerlink" title="子系统"></a>子系统</h3><p>子系统也是由一群有关联的个体所组成的系统，多半会是更大系统中的一部分。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>一个系统的架构，只包括顶层这一个层级的架构，而不包括下属子系统层级的架构。所以微信架构，就是指微信系统这个层级的架构。当然，微信的子系统，比如支付系统，也有它自己的架构，同样只包括顶层。</p>
+<h2 id="模块与组件"><a href="#模块与组件" class="headerlink" title="模块与组件"></a>模块与组件</h2><h3 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h3><p>软件模块（Module）是一套一致而互相有紧密关连的软件组织。它分别包含了程序和数据结构两部分。现代软件开发往往利用模块作为合成的单位。模块的接口表达了由该模块提供的功能和调用它时所需的元素。模块是可能分开被编写的单位。这使它们可再用和允许人员同时协作、编写及研究不同的模块。</p>
+<h3 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h3><p>软件组件定义为自包含的、可编程的、可重用的、与语言无关的软件单元，软件组件可以很容易被用于组装应用程序中。</p>
+<h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h3><ul>
+<li>模块和组件都是系统的组成部分，只是从不同的角度拆分系统而已。</li>
+<li>从业务逻辑的角度来拆分系统后，得到的单元就是“模块”；从物理部署的角度来拆分系统后，得到的单元就是“组件”。划分模块的主要目的是职责分离；划分组件的主要目的是单元复用。</li>
+<li>假设我们要做一个学生信息管理系统，这个系统从逻辑的角度来拆分，可以分为“登录注册模块”“个人信息模块”和“个人成绩模块”；从物理的角度来拆分，可以拆分为 Nginx、Web 服务器和 MySQL。</li>
+<li>业务系统的架构师，首先需要思考怎么从业务逻辑的角度把系统拆分成一个个模块角色，其次需要思考怎么从物理部署的角度把系统拆分成组件角色，例如选择 MySQL 作为存储系统。但是对于 MySQL 内部的体系架构（是可以不用关注的，也不需要在你的业务系统架构中展现这些内容。</li>
+</ul>
+<h2 id="框架与架构"><a href="#框架与架构" class="headerlink" title="框架与架构"></a>框架与架构</h2><h3 id="框架"><a href="#框架" class="headerlink" title="框架"></a>框架</h3><p>软件框架（Software framework）通常指的是为了实现某个业界标准或完成特定基本任务的软件组件规范，也指为了实现某个软件组件规范时，提供规范所要求之基础功能的软件产品。</p>
+<h3 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h3><p>软件架构指软件系统的“基础结构”，创造这些基础结构的准则，以及对这些结构的描述。</p>
+<h3 id="总结-2"><a href="#总结-2" class="headerlink" title="总结"></a>总结</h3><ul>
+<li>框架关注的是“规范”，架构关注的是“结构”。</li>
+<li>框架是一整套开发规范，架构是某一套开发规范下的具体落地方案，包括各个模块之间的组合关系以及它们协同起来完成功能的运作规则。</li>
+</ul>
+<h1 id="重新定义架构"><a href="#重新定义架构" class="headerlink" title="重新定义架构"></a>重新定义架构</h1><h2 id="4R-架构"><a href="#4R-架构" class="headerlink" title="4R 架构"></a>4R 架构</h2><ul>
+<li>软件架构指软件系统的顶层（Rank）结构，它定义了系统由哪些角色（Role）组成，角色之间的关系（Relation）和运作规则（Rule）</li>
+<li>Rank：它是指软件架构是分层的，对应“系统”和“子系统”的分层关系。通常情况下，我们只需要关注某一层的架构，最多展示相邻两层的架构，而不需要把每一层的架构全部糅杂在一起。无论是架构设计还是画架构图，都应该采取“自顶向下，逐步细化”的方式。</li>
+<li>Role：它是指软件系统包含哪些角色，每个角色都会负责系统的一部分功能。架构设计最重要的工作之一就是将系统拆分为多个角色。最常见的微服务拆分其实就是将整体复杂的业务系统按照业务领域的方式，拆分为多个微服务，每个微服务就是系统的一个角色。</li>
+<li>Relation：它是指软件系统的角色之间的关系，对应到架构图中其实就是连接线，角色之间的关系不能乱连，任何关系最后都需要代码来实现，包括连接方式（HTTP、TCP、UDP 和串口等）、数据协议（JSON、XML 和二进制等）以及具体的接口等。</li>
+<li>Rule：它是指软件系统角色之间如何协作来完成系统功能。</li>
+</ul>
+<h1 id="架构设计的目的"><a href="#架构设计的目的" class="headerlink" title="架构设计的目的"></a>架构设计的目的</h1><p>架构也是为了应对软件系统复杂度而提出的一个解决方案，即架构设计的主要目的是为了解决软件系统复杂度带来的问题。</p>
+<ul>
+<li>遵循这条准则能够让“新手”<strong>架构师心中有数，而不是一头雾水</strong>。</li>
+<li>遵循这条准则能够让“老鸟”<strong>架构师有的放矢，而不是贪大求全</strong>。</li>
+</ul>
+<h1 id="复杂性来源"><a href="#复杂性来源" class="headerlink" title="复杂性来源"></a>复杂性来源</h1><h2 id="高性能"><a href="#高性能" class="headerlink" title="高性能"></a>高性能</h2><h3 id="单机复杂度"><a href="#单机复杂度" class="headerlink" title="单机复杂度"></a>单机复杂度</h3><ul>
+<li>操作系统和性能最相关的就是进程和线程</li>
+<li>如果我们要完成一个高性能的软件系统，需要考虑如多进程、多线程、进程间通信、多线程并发等技术点，而且这些技术并不是最新的就是最好的，也不是非此即彼的选择。<h3 id="集群复杂度"><a href="#集群复杂度" class="headerlink" title="集群复杂度"></a>集群复杂度</h3></li>
+<li>任务分配，负载均衡</li>
+<li>任务分解，微服务<ul>
+<li>简单的系统更加容易做到高性能</li>
+<li>可以针对单个任务进行扩展</li>
+</ul>
+</li>
+</ul>
+<h3 id="指标"><a href="#指标" class="headerlink" title="指标"></a>指标</h3><p>衡量软件性能包括了响应时间、TPS、服务器资源利用率等客观指标</p>
+<h2 id="高可用"><a href="#高可用" class="headerlink" title="高可用"></a>高可用</h2><p>系统无中断地执行其功能的能力，代表系统的可用性程度，是进行系统设计时的准则之一。<br>系统的高可用方案五花八门，但万变不离其宗，本质上都是通过“冗余”来实现高可用。</p>
+<ul>
+<li>高性能增加机器目的在于“扩展”处理性能；</li>
+<li>高可用增加机器目的在于“冗余”处理单元。</li>
+</ul>
+<h3 id="计算高可用"><a href="#计算高可用" class="headerlink" title="计算高可用"></a>计算高可用</h3><p>“计算”指的是业务的逻辑处理。计算有一个特点就是无论在哪台机器上进行计算，同样的算法和输入数据，产出的结果都是一样的</p>
+<h3 id="存储高可用"><a href="#存储高可用" class="headerlink" title="存储高可用"></a>存储高可用</h3><ul>
+<li>整个系统的高可用设计关键点和难点就在于“存储高可用”。存储与计算相比，有一个本质上的区别：将数据从一台机器搬到到另一台机器，需要经过线路进行传输。</li>
+<li>存储高可用的难点不在于如何备份数据，而在于如何减少或者规避数据不一致对业务造成的影响。</li>
+</ul>
+<h3 id="高可用状态决策"><a href="#高可用状态决策" class="headerlink" title="高可用状态决策"></a>高可用状态决策</h3><p>无论是计算高可用还是存储高可用，其基础都是“状态决策”，即系统需要能够判断当前的状态是正常还是异常，如果出现了异常就要采取行动来保证高可用</p>
+<ul>
+<li>独裁式</li>
+<li>协商式</li>
+<li>民主式</li>
+</ul>
+<h2 id="可扩展性"><a href="#可扩展性" class="headerlink" title="可扩展性"></a>可扩展性</h2><p>可扩展性是指，系统为了应对将来需求变化而提供的一种扩展能力，当有新的需求出现时，系统不需要或者仅需要少量修改就可以支持，无须整个系统重构或者重建。<br>设计具备良好可扩展性的系统，有两个基本条件：</p>
+<ul>
+<li>正确预测变化<ul>
+<li>原则：只预测 2 年内的可能变化，不要试图预测 5 年甚至 10 年后的变化。</li>
+</ul>
+</li>
+<li>完美应对变化<ul>
+<li>方案一：提炼出“变化层”和“稳定层”，核心思想是通过变化层来隔离变化</li>
+<li>方案二：提炼出“抽象层”和“实现层”，核心思想就是通过实现层来封装变化。</li>
+<li>原则：1 写 2 抄 3 重构原则<h2 id="其他来源"><a href="#其他来源" class="headerlink" title="其他来源"></a>其他来源</h2><h3 id="成本"><a href="#成本" class="headerlink" title="成本"></a>成本</h3>往往只有“创新”才能达到低成本目标</li>
+</ul>
+</li>
+<li>引进新技术</li>
+<li>自研新技术</li>
+</ul>
+<p>低成本本质上是与高性能和高可用冲突的，所以低成本很多时候不会是架构设计的首要目标，而是架构设计的附加约束。</p>
+<h3 id="安全"><a href="#安全" class="headerlink" title="安全"></a>安全</h3><ul>
+<li>功能安全：其实就是“防小偷”</li>
+<li>架构安全：就是“防强盗”<h3 id="规模"><a href="#规模" class="headerlink" title="规模"></a>规模</h3></li>
+<li>规模带来复杂度的主要原因就是“量变引起质变”</li>
+<li>数据越来越多，系统复杂度发生质变</li>
+</ul>
+<h1 id="架构设计原则"><a href="#架构设计原则" class="headerlink" title="架构设计原则"></a>架构设计原则</h1><h2 id="合适原则，“合适优于业界领先”"><a href="#合适原则，“合适优于业界领先”" class="headerlink" title="合适原则，“合适优于业界领先”"></a>合适原则，“合适优于业界领先”</h2><p>不适合的情况</p>
+<ul>
+<li>没那么多人，却想干那么多活</li>
+<li>没有那么多积累，却想一步登天</li>
+<li>没有那么卓越的业务场景，却幻想灵光一闪成为天才<h2 id="简洁原则，“简洁优于复杂”"><a href="#简洁原则，“简洁优于复杂”" class="headerlink" title="简洁原则，“简洁优于复杂”"></a>简洁原则，“简洁优于复杂”</h2><h3 id="复杂的表现"><a href="#复杂的表现" class="headerlink" title="复杂的表现"></a>复杂的表现</h3></li>
+<li>结构的复杂性<ul>
+<li>现象<ul>
+<li>组成复杂系统的组件数量更多</li>
+<li>同时这些组件之间的关系也更加复杂</li>
+</ul>
+</li>
+<li>问题<ul>
+<li>组件越多，就越有可能其中某个组件出现故障</li>
+<li>某个组件改动，会影响关联的所有组件</li>
+<li>定位一个复杂系统中的问题总是比简单系统更加困难</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>逻辑的复杂性<ul>
+<li>单个组件承担了太多的功能</li>
+<li>采用了复杂的算法<h2 id="演进原则，“演化优于一步到位”"><a href="#演进原则，“演化优于一步到位”" class="headerlink" title="演进原则，“演化优于一步到位”"></a>演进原则，“演化优于一步到位”</h2><h3 id="对于软件来说，变化才是主题"><a href="#对于软件来说，变化才是主题" class="headerlink" title="对于软件来说，变化才是主题"></a>对于软件来说，变化才是主题</h3>软件架构设计其实更加类似于大自然“设计”一个生物，通过演化让生物适应环境，逐步变得更加强大<h3 id="避坑"><a href="#避坑" class="headerlink" title="避坑"></a>避坑</h3></li>
+</ul>
+</li>
+<li>时刻提醒自己不要贪大求全</li>
+<li>避免盲目照搬大公司的做法<h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3></li>
+<li>应该认真分析当前业务的特点，明确业务面临的主要问题，设计合理的架构，快速落地以满足业务需要</li>
+<li>在运行过程中不断完善架构，不断随着业务演化架构</li>
+</ul>
+<h1 id="架构设计流程"><a href="#架构设计流程" class="headerlink" title="架构设计流程"></a>架构设计流程</h1><h2 id="识别复杂度"><a href="#识别复杂度" class="headerlink" title="识别复杂度"></a>识别复杂度</h2><ul>
+<li>将主要的复杂度问题列出来，然后根据业务、技术、团队等综合情况进行排序，优先解决当前面临的最主要的复杂度问题。</li>
+<li>设计的目标应该以峰值来计算。峰值一般取平均值的 3 倍，</li>
+<li>设计目标设定为峰值的 4 倍是根据业务发展速度来预估的，不是固定为 4 倍，不同的业务可以是 2 倍，也可以是 8 倍，但一般不要设定在 10 倍以上，更不要一上来就按照 100 倍预估。</li>
+</ul>
+<h2 id="设计备选方案"><a href="#设计备选方案" class="headerlink" title="设计备选方案"></a>设计备选方案</h2><p>新技术都是在现有技术的基础上发展起来的</p>
+<h3 id="常见错误"><a href="#常见错误" class="headerlink" title="常见错误"></a>常见错误</h3><ul>
+<li>设计最优秀的方案</li>
+<li>只做一个方案<ul>
+<li>弊端<ul>
+<li>心里评估过于简单，可能没有想得全面</li>
+<li>单一方案设计会出现过度辩护的情况，</li>
+<li>架构师再怎么牛，经验知识和技能也有局限</li>
+</ul>
+</li>
+<li>实践<ul>
+<li>备选方案的数量以 3 ~ 5 个为最佳</li>
+<li>备选方案的差异要比较明显</li>
+<li>备选方案的技术不要只局限于已经熟悉的技术</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>备选方案过于详细<ul>
+<li>耗费了大量的时间和精力</li>
+<li>将注意力集中到细节中，忽略了整体的技术设计，导致备选方案数量不够或者差异不大。</li>
+<li>评审的时候其他人会被很多细节给绕进去，评审效果很差。</li>
+<li>正确的做法是备选阶段关注的是技术选型，而不是技术细节，技术选型的差异要比较明显</li>
+</ul>
+</li>
+</ul>
+<h3 id="评估和选择备选方案"><a href="#评估和选择备选方案" class="headerlink" title="评估和选择备选方案"></a>评估和选择备选方案</h3><p>常见指导思想</p>
+<ul>
+<li>最简派</li>
+<li>最牛派</li>
+<li>最熟派</li>
+<li>领导派</li>
+</ul>
+<h3 id="评估策略"><a href="#评估策略" class="headerlink" title="评估策略"></a>评估策略</h3><ul>
+<li>列出我们需要关注的质量属性点，然后分别从这些质量属性的维度去评估每个方案，再综合挑选适合当时情况的最优方案</li>
+<li>常见的方案质量属性点有：性能、可用性、硬件成本、项目投入、复杂度、安全性、可扩展性等</li>
+<li>通常情况下，如果某个质量属性评估和业务发展有关系（例如，性能、硬件成本等），需要评估未来业务发展的规模时，一种简单的方式是将当前的业务规模乘以 2 ~4 即可，如果现在的基数较低，可以乘以 4；如果现在基数较高，可以乘以 2。</li>
+<li>即架构师综合当前的业务发展情况、团队人员规模和技能、业务发展预测等因素，将质量属性按照优先级排序，首先挑选满足第一优先级的，如果方案都满足，那就再看第二优先级……以此类推。</li>
+</ul>
+<h2 id="详细设计方案"><a href="#详细设计方案" class="headerlink" title="详细设计方案"></a>详细设计方案</h2><p>详细设计方案阶段可能遇到的一种极端情况就是在详细设计阶段发现备选方案不可行</p>
+<ul>
+<li>架构师不但要进行备选方案设计和选型，还需要对备选方案的关键细节有较深入的理解</li>
+<li>通过分步骤、分阶段、分系统等方式，尽量降低方案复杂度，方案本身的复杂度越高，某个细节推翻整个方案的可能性就越高，适当降低复杂性，可以减少这种风险。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Frank Yu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://m.fanruo.net/2022/04/29/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%B8%80%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/" title="架构设计之一——基础架构">https://m.fanruo.net/2022/04/29/架构设计之一——基础架构/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/zh-CN" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-ND</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" rel="tag"># 架构设计</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/23/Reids-%E6%BA%90%E7%A0%81%E5%AF%BC%E8%AF%BB/" rel="prev" title="Reids 源码导读">
+      <i class="fa fa-chevron-left"></i> Reids 源码导读
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E7%9A%84%E5%8E%86%E5%8F%B2%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">架构设计的历史背景</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E8%AF%AD%E8%A8%80%EF%BC%881940-%E5%B9%B4%E4%B9%8B%E5%89%8D%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">机器语言（1940 年之前）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%EF%BC%8820-%E4%B8%96%E7%BA%AA-40-%E5%B9%B4%E4%BB%A3%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">汇编语言（20 世纪 40 年代）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E7%BA%A7%E8%AF%AD%E8%A8%80%EF%BC%8820-%E4%B8%96%E7%BA%AA-50-%E5%B9%B4%E4%BB%A3%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">高级语言（20 世纪 50 年代）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AC%A1%E8%BD%AF%E4%BB%B6%E5%8D%B1%E6%9C%BA%E4%B8%8E%E7%BB%93%E6%9E%84%E5%8C%96%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%EF%BC%8820-%E4%B8%96%E7%BA%AA-60-%E5%B9%B4%E4%BB%A3-20-%E4%B8%96%E7%BA%AA-70-%E5%B9%B4%E4%BB%A3%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">第一次软件危机与结构化程序设计（20 世纪 60 年代~20 世纪 70 年代）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AC%A1%E8%BD%AF%E4%BB%B6%E5%8D%B1%E6%9C%BA%E4%B8%8E%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%EF%BC%8820-%E4%B8%96%E7%BA%AA-80-%E5%B9%B4%E4%BB%A3%EF%BC%89"><span class="nav-number">1.3.2.</span> <span class="nav-text">第二次软件危机与面向对象（20 世纪 80 年代）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%AF%E4%BB%B6%E6%9E%B6%E6%9E%84%E7%9A%84%E5%8E%86%E5%8F%B2%E8%83%8C%E6%99%AF"><span class="nav-number">1.4.</span> <span class="nav-text">软件架构的历史背景</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89%E7%BB%84%E5%AE%B9%E6%98%93%E6%B7%B7%E6%B7%86%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">2.</span> <span class="nav-text">三组容易混淆的概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E4%B8%8E%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.1.</span> <span class="nav-text">系统与子系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.1.1.</span> <span class="nav-text">系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.1.2.</span> <span class="nav-text">子系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">2.1.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BB%84%E4%BB%B6"><span class="nav-number">2.2.</span> <span class="nav-text">模块与组件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9D%97"><span class="nav-number">2.2.1.</span> <span class="nav-text">模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%84%E4%BB%B6"><span class="nav-number">2.2.2.</span> <span class="nav-text">组件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-1"><span class="nav-number">2.2.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A1%86%E6%9E%B6%E4%B8%8E%E6%9E%B6%E6%9E%84"><span class="nav-number">2.3.</span> <span class="nav-text">框架与架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A1%86%E6%9E%B6"><span class="nav-number">2.3.1.</span> <span class="nav-text">框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-number">2.3.2.</span> <span class="nav-text">架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-2"><span class="nav-number">2.3.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%87%8D%E6%96%B0%E5%AE%9A%E4%B9%89%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">重新定义架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4R-%E6%9E%B6%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">4R 架构</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E7%9A%84%E7%9B%AE%E7%9A%84"><span class="nav-number">4.</span> <span class="nav-text">架构设计的目的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%8D%E6%9D%82%E6%80%A7%E6%9D%A5%E6%BA%90"><span class="nav-number">5.</span> <span class="nav-text">复杂性来源</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E6%80%A7%E8%83%BD"><span class="nav-number">5.1.</span> <span class="nav-text">高性能</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E6%9C%BA%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="nav-number">5.1.1.</span> <span class="nav-text">单机复杂度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="nav-number">5.1.2.</span> <span class="nav-text">集群复杂度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%87%E6%A0%87"><span class="nav-number">5.1.3.</span> <span class="nav-text">指标</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="nav-number">5.2.</span> <span class="nav-text">高可用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="nav-number">5.2.1.</span> <span class="nav-text">计算高可用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="nav-number">5.2.2.</span> <span class="nav-text">存储高可用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8%E7%8A%B6%E6%80%81%E5%86%B3%E7%AD%96"><span class="nav-number">5.2.3.</span> <span class="nav-text">高可用状态决策</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7"><span class="nav-number">5.3.</span> <span class="nav-text">可扩展性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E6%9D%A5%E6%BA%90"><span class="nav-number">5.4.</span> <span class="nav-text">其他来源</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%90%E6%9C%AC"><span class="nav-number">5.4.1.</span> <span class="nav-text">成本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E5%85%A8"><span class="nav-number">5.4.2.</span> <span class="nav-text">安全</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%84%E6%A8%A1"><span class="nav-number">5.4.3.</span> <span class="nav-text">规模</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="nav-number">6.</span> <span class="nav-text">架构设计原则</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%88%E9%80%82%E5%8E%9F%E5%88%99%EF%BC%8C%E2%80%9C%E5%90%88%E9%80%82%E4%BC%98%E4%BA%8E%E4%B8%9A%E7%95%8C%E9%A2%86%E5%85%88%E2%80%9D"><span class="nav-number">6.1.</span> <span class="nav-text">合适原则，“合适优于业界领先”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E6%B4%81%E5%8E%9F%E5%88%99%EF%BC%8C%E2%80%9C%E7%AE%80%E6%B4%81%E4%BC%98%E4%BA%8E%E5%A4%8D%E6%9D%82%E2%80%9D"><span class="nav-number">6.2.</span> <span class="nav-text">简洁原则，“简洁优于复杂”</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E6%9D%82%E7%9A%84%E8%A1%A8%E7%8E%B0"><span class="nav-number">6.2.1.</span> <span class="nav-text">复杂的表现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%94%E8%BF%9B%E5%8E%9F%E5%88%99%EF%BC%8C%E2%80%9C%E6%BC%94%E5%8C%96%E4%BC%98%E4%BA%8E%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D%E2%80%9D"><span class="nav-number">6.3.</span> <span class="nav-text">演进原则，“演化优于一步到位”</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E4%BA%8E%E8%BD%AF%E4%BB%B6%E6%9D%A5%E8%AF%B4%EF%BC%8C%E5%8F%98%E5%8C%96%E6%89%8D%E6%98%AF%E4%B8%BB%E9%A2%98"><span class="nav-number">6.3.1.</span> <span class="nav-text">对于软件来说，变化才是主题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%81%BF%E5%9D%91"><span class="nav-number">6.3.2.</span> <span class="nav-text">避坑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="nav-number">6.3.3.</span> <span class="nav-text">最佳实践</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E6%B5%81%E7%A8%8B"><span class="nav-number">7.</span> <span class="nav-text">架构设计流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%86%E5%88%AB%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="nav-number">7.1.</span> <span class="nav-text">识别复杂度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E5%A4%87%E9%80%89%E6%96%B9%E6%A1%88"><span class="nav-number">7.2.</span> <span class="nav-text">设计备选方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF"><span class="nav-number">7.2.1.</span> <span class="nav-text">常见错误</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0%E5%92%8C%E9%80%89%E6%8B%A9%E5%A4%87%E9%80%89%E6%96%B9%E6%A1%88"><span class="nav-number">7.2.2.</span> <span class="nav-text">评估和选择备选方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0%E7%AD%96%E7%95%A5"><span class="nav-number">7.2.3.</span> <span class="nav-text">评估策略</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%A1%88"><span class="nav-number">7.3.</span> <span class="nav-text">详细设计方案</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Frank Yu</p>
+  <div class="site-description" itemprop="description">初心 读书 知新 生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HiYu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HiYu" rel="noopener" target="_blank">GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yourname@gmail.com" title="E-Mail → mailto:yourname@gmail.com" rel="noopener" target="_blank">E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-nd.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Frank Yu</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">84k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:16</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
