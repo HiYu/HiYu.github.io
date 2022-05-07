@@ -119,12 +119,12 @@
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">10</span></a>
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">8</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">31</span></a>
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">34</span></a>
 
   </li>
         <li class="menu-item menu-item-archives">
@@ -195,8 +195,17 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-07 22:56:30" itemprop="dateModified" datetime="2022-05-07T22:56:30+08:00">2022-05-07</time>
+                <time title="修改时间：2022-05-07 23:04:19" itemprop="dateModified" datetime="2022-05-07T23:04:19+08:00">2022-05-07</time>
               </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" itemprop="url" rel="index"><span itemprop="name">架构设计</span></a>
+                </span>
+            </span>
 
           <br>
             <span class="post-meta-item" title="本文字数">
@@ -223,24 +232,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="CAP"><a href="#CAP" class="headerlink" title="CAP"></a>CAP</h1><h2 id="CAP-理论"><a href="#CAP-理论" class="headerlink" title="CAP 理论"></a>CAP 理论</h2><p>在一个分布式系统（指互相连接并共享数据的节点的集合）中，当涉及读写操作时，只能保证一致性（Consistence）、可用性（Availability）、分区容错性（Partition Tolerance）三者中的两个，另外一个必须被牺牲。</p>
-<ul>
-<li>P 分区容忍性（Partition Tolerance）：当出现网络分区后，系统能够继续“履行职责”</li>
-<li>A 可用性（Availability）：非故障的节点在合理的时间内返回合理的响应（不是错误和超时的响应）</li>
-<li>C 一致性（Consistency）：对某个指定的客户端来说，读操作保证能够返回最新的写操作结果</li>
-</ul>
-<h2 id="CAP-特点："><a href="#CAP-特点：" class="headerlink" title="CAP 特点："></a>CAP 特点：</h2><ul>
-<li>分布式系统并不一定会互联和共享数据</li>
-<li>CAP 关注的是对数据的读写操作，而不是分布式系统的所有功能</li>
-</ul>
-<h2 id="CAP-应用"><a href="#CAP-应用" class="headerlink" title="CAP 应用"></a>CAP 应用</h2><ul>
-<li>CP - Consistency&#x2F;Partition Tolerance</li>
-<li>AP - Availability&#x2F;Partition Tolerance</li>
-</ul>
-<h2 id="一些细节"><a href="#一些细节" class="headerlink" title="一些细节"></a>一些细节</h2><h3 id="CAP-关注的粒度是数据，而不是整个系统"><a href="#CAP-关注的粒度是数据，而不是整个系统" class="headerlink" title="CAP 关注的粒度是数据，而不是整个系统"></a>CAP 关注的粒度是数据，而不是整个系统</h3>
+          <p>导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第三部分，主要介绍分布式系统中的 CAP 理论以及相关的 ACID 理论和 BASE理论。对分布式系统架构有一个理论上的感知。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%203-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BCAP%E7%90%86%E8%AE%BA/#more" rel="contents">
+              <a class="btn" href="/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%203-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BCAP%E7%90%86%E8%AE%BA/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -295,7 +290,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-07 22:38:55" itemprop="dateModified" datetime="2022-05-07T22:38:55+08:00">2022-05-07</time>
+                <time title="修改时间：2022-05-07 23:00:31" itemprop="dateModified" datetime="2022-05-07T23:00:31+08:00">2022-05-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -304,10 +299,6 @@
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" itemprop="url" rel="index"><span itemprop="name">架构设计</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">高性能架构</span></a>
                 </span>
             </span>
 
@@ -394,7 +385,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-07 22:38:46" itemprop="dateModified" datetime="2022-05-07T22:38:46+08:00">2022-05-07</time>
+                <time title="修改时间：2022-05-07 23:00:21" itemprop="dateModified" datetime="2022-05-07T23:00:21+08:00">2022-05-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -403,10 +394,6 @@
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" itemprop="url" rel="index"><span itemprop="name">架构设计</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">基础架构</span></a>
                 </span>
             </span>
 
@@ -1199,13 +1186,13 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">8</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-count">34</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
