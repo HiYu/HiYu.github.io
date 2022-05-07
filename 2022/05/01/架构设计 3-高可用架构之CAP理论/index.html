@@ -22,18 +22,18 @@
 
   <meta name="description" content="CAPCAP 理论在一个分布式系统（指互相连接并共享数据的节点的集合）中，当涉及读写操作时，只能保证一致性（Consistence）、可用性（Availability）、分区容错性（Partition Tolerance）三者中的两个，另外一个必须被牺牲。  P 分区容忍性（Partition Tolerance）：当出现网络分区后，系统能够继续“履行职责” A 可用性（Availability）">
 <meta property="og:type" content="article">
-<meta property="og:title" content="架构设计 3-高可用架构——CAP理论">
-<meta property="og:url" content="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%203-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E2%80%94%E2%80%94CAP%E7%90%86%E8%AE%BA/index.html">
+<meta property="og:title" content="架构设计 3-高可用架构之CAP理论">
+<meta property="og:url" content="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%203-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BCAP%E7%90%86%E8%AE%BA/index.html">
 <meta property="og:site_name" content="凡 若">
 <meta property="og:description" content="CAPCAP 理论在一个分布式系统（指互相连接并共享数据的节点的集合）中，当涉及读写操作时，只能保证一致性（Consistence）、可用性（Availability）、分区容错性（Partition Tolerance）三者中的两个，另外一个必须被牺牲。  P 分区容忍性（Partition Tolerance）：当出现网络分区后，系统能够继续“履行职责” A 可用性（Availability）">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-05-01T14:34:55.000Z">
-<meta property="article:modified_time" content="2022-05-07T14:39:43.633Z">
+<meta property="article:modified_time" content="2022-05-07T14:43:07.567Z">
 <meta property="article:author" content="Frank">
 <meta property="article:tag" content="人工智能 基础架构 读书 人文 经济 历史 心理学 杂谈 程序员 互联网 存储">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%203-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E2%80%94%E2%80%94CAP%E7%90%86%E8%AE%BA/">
+<link rel="canonical" href="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%203-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BCAP%E7%90%86%E8%AE%BA/">
 
 
 <script id="page-configurations">
@@ -46,7 +46,7 @@
   };
 </script>
 
-  <title>架构设计 3-高可用架构——CAP理论 | 凡 若</title>
+  <title>架构设计 3-高可用架构之CAP理论 | 凡 若</title>
   
 
 
@@ -167,7 +167,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%203-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E2%80%94%E2%80%94CAP%E7%90%86%E8%AE%BA/">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%203-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BCAP%E7%90%86%E8%AE%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -180,7 +180,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          架构设计 3-高可用架构——CAP理论
+          架构设计 3-高可用架构之CAP理论
         </h1>
 
         <div class="post-meta">
@@ -197,7 +197,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-07 22:39:43" itemprop="dateModified" datetime="2022-05-07T22:39:43+08:00">2022-05-07</time>
+                <time title="修改时间：2022-05-07 22:43:07" itemprop="dateModified" datetime="2022-05-07T22:43:07+08:00">2022-05-07</time>
               </span>
 
           <br>
@@ -1235,7 +1235,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%203-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E2%80%94%E2%80%94CAP%E7%90%86%E8%AE%BA/" title="架构设计 3-高可用架构——CAP理论">https://m.fanruo.net/2022/05/01/架构设计 3-高可用架构——CAP理论/</a>
+    <a href="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%203-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BCAP%E7%90%86%E8%AE%BA/" title="架构设计 3-高可用架构之CAP理论">https://m.fanruo.net/2022/05/01/架构设计 3-高可用架构之CAP理论/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/zh-CN" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-ND</a> 许可协议。转载请注明出处！
@@ -1466,7 +1466,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'HiYu.github.io',
       owner       : 'HiYu',
       admin       : ['HiYu'],
-      id          : '163a2a14311b6b7ef868aaaf937aaf55',
+      id          : '70c10e7dcbedf5665b107d1f5bb6aa0e',
         language: 'en | es-ES | fr | ru | zh-CN | zh-TW',
       distractionFreeMode: true
     });
