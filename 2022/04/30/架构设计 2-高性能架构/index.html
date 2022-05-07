@@ -23,7 +23,7 @@
   <meta name="description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第二部分，主要介绍高性能数据库（包括关系数据库、NoSQL）的设计、缓存设计、单机高性能、集群高性能（负载均衡）等。深入了解架构设计过程中遇到的高性能问题以及解决方案。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="架构设计之二——高性能架构">
-<meta property="og:url" content="https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BA%8C%E2%80%94%E2%80%94%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:url" content="https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%202-%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/index.html">
 <meta property="og:site_name" content="凡 若">
 <meta property="og:description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第二部分，主要介绍高性能数据库（包括关系数据库、NoSQL）的设计、缓存设计、单机高性能、集群高性能（负载均衡）等。深入了解架构设计过程中遇到的高性能问题以及解决方案。">
 <meta property="og:locale" content="zh_CN">
@@ -33,7 +33,7 @@
 <meta property="article:tag" content="架构设计">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BA%8C%E2%80%94%E2%80%94%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/">
+<link rel="canonical" href="https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%202-%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/">
 
 
 <script id="page-configurations">
@@ -167,7 +167,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BA%8C%E2%80%94%E2%80%94%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%202-%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -544,7 +544,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BA%8C%E2%80%94%E2%80%94%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/" title="架构设计之二——高性能架构">https://m.fanruo.net/2022/04/30/架构设计之二——高性能架构/</a>
+    <a href="https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%202-%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/" title="架构设计之二——高性能架构">https://m.fanruo.net/2022/04/30/架构设计 2-高性能架构/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/zh-CN" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-ND</a> 许可协议。转载请注明出处！
@@ -564,7 +564,7 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/04/29/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%B8%80%E2%80%94%E2%80%94%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/" rel="prev" title="架构设计之一——基础架构">
+    <a href="/2022/04/29/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%201-%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/" rel="prev" title="架构设计之一——基础架构">
       <i class="fa fa-chevron-left"></i> 架构设计之一——基础架构
     </a></div>
       <div class="post-nav-item">
@@ -781,7 +781,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'HiYu.github.io',
       owner       : 'HiYu',
       admin       : ['HiYu'],
-      id          : '4f3c0452e6b5033ff67f88dbf36f2228',
+      id          : '0002ab43bb3ba02b15f2261552cdbd4f',
         language: 'en | es-ES | fr | ru | zh-CN | zh-TW',
       distractionFreeMode: true
     });
