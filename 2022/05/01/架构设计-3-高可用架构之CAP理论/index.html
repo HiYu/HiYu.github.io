@@ -20,21 +20,21 @@
     var CONFIG = {"hostname":"m.fanruo.net","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第九部分。首先整体介绍可扩展架构的基本思想——“拆”，以及如何拆；随后介绍了面向流程的拆分，即分层架构。">
+  <meta name="description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第三部分，主要介绍分布式系统中的 CAP 理论以及相关的 ACID 理论和 BASE理论。对分布式系统架构有一个理论上的感知。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="架构设计 9-可扩展架构之分层架构">
-<meta property="og:url" content="https://m.fanruo.net/2022/05/16/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-9-%E5%8F%AF%E6%89%A9%E5%B1%95%E6%9E%B6%E6%9E%84%E4%B9%8B%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:title" content="架构设计 3-高可用架构之CAP理论">
+<meta property="og:url" content="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-3-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BCAP%E7%90%86%E8%AE%BA/index.html">
 <meta property="og:site_name" content="凡 若">
-<meta property="og:description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第九部分。首先整体介绍可扩展架构的基本思想——“拆”，以及如何拆；随后介绍了面向流程的拆分，即分层架构。">
+<meta property="og:description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第三部分，主要介绍分布式系统中的 CAP 理论以及相关的 ACID 理论和 BASE理论。对分布式系统架构有一个理论上的感知。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-05-16T11:43:25.000Z">
-<meta property="article:modified_time" content="2022-05-16T14:39:56.420Z">
+<meta property="article:published_time" content="2022-05-01T14:34:55.000Z">
+<meta property="article:modified_time" content="2022-05-13T14:27:56.069Z">
 <meta property="article:author" content="Frank">
 <meta property="article:tag" content="架构设计">
-<meta property="article:tag" content="可扩展架构">
+<meta property="article:tag" content="高可用架构">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://m.fanruo.net/2022/05/16/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-9-%E5%8F%AF%E6%89%A9%E5%B1%95%E6%9E%B6%E6%9E%84%E4%B9%8B%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/">
+<link rel="canonical" href="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-3-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BCAP%E7%90%86%E8%AE%BA/">
 
 
 <script id="page-configurations">
@@ -47,7 +47,7 @@
   };
 </script>
 
-  <title>架构设计 9-可扩展架构之分层架构 | 凡 若</title>
+  <title>架构设计 3-高可用架构之CAP理论 | 凡 若</title>
   
 
 
@@ -168,7 +168,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2022/05/16/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-9-%E5%8F%AF%E6%89%A9%E5%B1%95%E6%9E%B6%E6%9E%84%E4%B9%8B%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-3-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BCAP%E7%90%86%E8%AE%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -181,7 +181,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          架构设计 9-可扩展架构之分层架构
+          架构设计 3-高可用架构之CAP理论
         </h1>
 
         <div class="post-meta">
@@ -190,10 +190,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-05-16 19:43:25 / 修改时间：22:39:56" itemprop="dateCreated datePublished" datetime="2022-05-16T19:43:25+08:00">2022-05-16</time>
+              <time title="创建时间：2022-05-01 22:34:55" itemprop="dateCreated datePublished" datetime="2022-05-01T22:34:55+08:00">2022-05-01</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-13 22:27:56" itemprop="dateModified" datetime="2022-05-13T22:27:56+08:00">2022-05-13</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -210,16 +216,16 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.2k</span>
+              <span>1.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
-            <div class="post-description">导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第九部分。首先整体介绍可扩展架构的基本思想——“拆”，以及如何拆；随后介绍了面向流程的拆分，即分层架构。</div>
+            <div class="post-description">导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第三部分，主要介绍分布式系统中的 CAP 理论以及相关的 ACID 理论和 BASE理论。对分布式系统架构有一个理论上的感知。</div>
 
         </div>
       </header>
@@ -233,52 +239,59 @@
         <blockquote>
 <p>扫描左侧二维码 关注公众号 回复 “架构设计” 获取架构设计笔记完整思维导图</p>
 </blockquote>
-<h1 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h1><p>所有的可扩展性架构设计，背后的基本思想都可以总结为一个字：拆！</p>
-<p>拆，就是将原本大一统的系统拆分成多个规模小的部分，扩展时只修改其中一部分即可，无须整个系统到处都改，通过这种方式来减少改动范围，降低改动风险。</p>
-<p>不同的拆分方式，本质上决定了系统的扩展方式。</p>
-<h1 id="拆分思路"><a href="#拆分思路" class="headerlink" title="拆分思路"></a>拆分思路</h1><h2 id="面向流程拆分"><a href="#面向流程拆分" class="headerlink" title="面向流程拆分"></a>面向流程拆分</h2><ul>
-<li>方案：将整个业务流程拆分为几个阶段，每个阶段作为一部分</li>
-<li>优势：扩展时大部分情况只需要修改某一层，少部分情况可能修改关联的两层，不会出现所有层都同时要修改</li>
-<li>典型架构：分层架构</li>
+<h1 id="CAP-理论"><a href="#CAP-理论" class="headerlink" title="CAP 理论"></a>CAP 理论</h1><p>在一个分布式系统（指互相连接并共享数据的节点的集合）中，当涉及读写操作时，只能保证一致性（Consistence）、可用性（Availability）、分区容错性（Partition Tolerance）三者中的两个，另外一个必须被牺牲。</p>
+<ul>
+<li>P 分区容忍性（Partition Tolerance）：当出现网络分区后，系统能够继续“履行职责”</li>
+<li>A 可用性（Availability）：非故障的节点在合理的时间内返回合理的响应（不是错误和超时的响应）</li>
+<li>C 一致性（Consistency）：对某个指定的客户端来说，读操作保证能够返回最新的写操作结果</li>
 </ul>
-<h2 id="面向服务拆分"><a href="#面向服务拆分" class="headerlink" title="面向服务拆分"></a>面向服务拆分</h2><ul>
-<li>方案：将系统提供的服务拆分，每个服务作为一部分</li>
-<li>优势：对某个服务扩展，或者要增加新的服务时，只需要扩展相关服务即可，无须修改所有的服务。</li>
-<li>典型架构：SOA &amp; 微服务</li>
+<h1 id="CAP-特点："><a href="#CAP-特点：" class="headerlink" title="CAP 特点："></a>CAP 特点：</h1><ul>
+<li>分布式系统并不一定会互联和共享数据</li>
+<li>CAP 关注的是对数据的读写操作，而不是分布式系统的所有功能</li>
 </ul>
-<h2 id="面向功能拆分"><a href="#面向功能拆分" class="headerlink" title="面向功能拆分"></a>面向功能拆分</h2><ul>
-<li>方案：将系统提供的功能拆分，每个功能作为一部分</li>
-<li>优势：对某个功能扩展，或者要增加新的功能时，只需要扩展相关功能即可，无须修改所有的服务</li>
-<li>典型架构：微内核架构</li>
+<h1 id="CAP-应用"><a href="#CAP-应用" class="headerlink" title="CAP 应用"></a>CAP 应用</h1><ul>
+<li>CP - Consistency&#x2F;Partition Tolerance</li>
+<li>AP - Availability&#x2F;Partition Tolerance</li>
 </ul>
-<h1 id="分层架构"><a href="#分层架构" class="headerlink" title="分层架构"></a>分层架构</h1><p>概念：分层架构是很常见的架构模式，它也叫 N 层架构，通常情况下，N 至少是 2 层。</p>
-<p>根据不同的划分维度和对象可分为：C&#x2F;S 架构&amp;B&#x2F;S 架构、MVC 架构&amp;MVP 架构、逻辑分层架构。</p>
-<h2 id="C-x2F-S-架构、B-x2F-S-架构"><a href="#C-x2F-S-架构、B-x2F-S-架构" class="headerlink" title="C&#x2F;S 架构、B&#x2F;S 架构"></a>C&#x2F;S 架构、B&#x2F;S 架构</h2><ul>
-<li>划分的对象是整个业务系统</li>
-<li>划分的维度是用户交互，即将和用户交互的部分独立为一层，支撑用户交互的后台作为另外一层</li>
+<h1 id="一些细节"><a href="#一些细节" class="headerlink" title="一些细节"></a>一些细节</h1><h2 id="CAP-关注的粒度是数据，而不是整个系统"><a href="#CAP-关注的粒度是数据，而不是整个系统" class="headerlink" title="CAP 关注的粒度是数据，而不是整个系统"></a>CAP 关注的粒度是数据，而不是整个系统</h2><ul>
+<li>在实际设计过程中，每个系统不可能只处理一种数据，而是包含多种类型的数据，有的数据必须选择 CP，有的数据必须选择 AP。</li>
+<li>。但在实际设计过程中，每个系统不可能只处理一种数据，而是包含多种类型的数据，有的数据必须选择 CP，有的数据必须选择 AP。</li>
 </ul>
-<h2 id="MVC-架构、MVP-架构"><a href="#MVC-架构、MVP-架构" class="headerlink" title="MVC 架构、MVP 架构"></a>MVC 架构、MVP 架构</h2><ul>
-<li>划分的对象是单个业务子系统</li>
-<li>划分的维度是职责，将不同的职责划分到独立层，但各层的依赖关系比较灵活</li>
+<h2 id="CAP-是忽略网络延迟的"><a href="#CAP-是忽略网络延迟的" class="headerlink" title="CAP 是忽略网络延迟的"></a>CAP 是忽略网络延迟的</h2><p>CAP 理论中的 C 在实践中是不可能完美实现的，在数据复制的过程中，节点 A 和节点 B 的数据并不一致。</p>
+<h2 id="正常运行情况下，不存在-CP-和-AP-的选择，可以同时满足-CA"><a href="#正常运行情况下，不存在-CP-和-AP-的选择，可以同时满足-CA" class="headerlink" title="正常运行情况下，不存在 CP 和 AP 的选择，可以同时满足 CA"></a>正常运行情况下，不存在 CP 和 AP 的选择，可以同时满足 CA</h2><ul>
+<li>CAP 理论告诉我们分布式系统只能选择 CP 或者 AP，但其实这里的前提是系统发生了“分区”现象。</li>
+<li>架构设计的时候既要考虑分区发生时选择 CP 还是 AP，也要考虑分区没有发生时如何保证 CA</li>
 </ul>
-<h2 id="逻辑分层架构"><a href="#逻辑分层架构" class="headerlink" title="逻辑分层架构"></a>逻辑分层架构</h2><ul>
-<li>划分的对象可以是单个业务子系统，也可以是整个业务系统</li>
-<li>划分的维度也是职责，逻辑分层架构中的层是自顶向下依赖的</li>
+<h2 id="放弃并不等于什么都不做，需要为分区恢复后做准备"><a href="#放弃并不等于什么都不做，需要为分区恢复后做准备" class="headerlink" title="放弃并不等于什么都不做，需要为分区恢复后做准备"></a>放弃并不等于什么都不做，需要为分区恢复后做准备</h2><ul>
+<li>最典型的就是在分区期间记录一些日志，当分区故障解决后，系统根据日志进行数据恢复，使得重新达到 CA 状态。</li>
+<li>分区期间放弃 C 或者 A，并不意味着永远放弃 C 和 A，我们可以在分区期间进行一些操作，从而让分区故障解决后，系统能够重新达到 CA 的状态。</li>
 </ul>
-<h2 id="核心要点"><a href="#核心要点" class="headerlink" title="核心要点"></a>核心要点</h2><ul>
-<li>需要保证各层之间的差异足够清晰，边界足够明显，让人看到架构图后就能看懂整个架构</li>
-<li>分层架构之所以能够较好地支撑系统扩展，本质在于隔离关注点（separation of concerns），即每个层中的组件只会处理本层的逻辑</li>
-<li>并不是简单地分层就一定能够实现隔离关注点从而支撑快速扩展，分层时要保证层与层之间的依赖是稳定的，才能真正支撑快速扩展。</li>
-<li>分层结构的另外一个特点就是层层传递，也就是说一旦分层确定，整个业务流程是按照层进行依次传递的，不能在层之间进行跳跃。</li>
+<h1 id="ACID"><a href="#ACID" class="headerlink" title="ACID"></a>ACID</h1><p>ACID 是数据库管理系统为了保证事务的正确性而提出来的一个理论：</p>
+<ul>
+<li>Atomicity（原子性）：一个事务中的所有操作，要么全部完成，要么全部不完成，不会在中间某个环节结束</li>
+<li>Consistency（一致性）：在事务开始之前和事务结束以后，数据库的完整性没有被破坏</li>
+<li>Isolation（隔离性）：数据库允许多个并发事务同时对数据进行读写和修改的能力。隔离性可以防止多个事务并发执行时由于交叉执行而导致数据的不一致。事务隔离分为不同级别，包括读未提交（Read uncommitted）、读提交（read committed）、可重复读（repeatable read）和串行化（Serializable）。</li>
+<li>Durability（持久性）：事务处理结束后，对数据的修改就是永久的，即便系统故障也不会丢失。</li>
 </ul>
-<h2 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h2><h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><p>强制将分层依赖限定为两两依赖，降低了整体系统复杂度。</p>
-<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ul>
-<li>分层架构另外一个典型的缺点就是性能，因为每一次业务请求都需要穿越所有的架构分层，有一些事情是多余的，多少都会有一些性能的浪费</li>
-<li>分层结构的代价就是冗余，也就是说，不管这个业务有多么简单，每层都必须要参与处理，甚至可能每层都写了一个简单的包装函数。</li>
+<h2 id="与-CAP-区别"><a href="#与-CAP-区别" class="headerlink" title="与 CAP 区别"></a>与 CAP 区别</h2><ul>
+<li>ACID 中的 C 是指数据库的数据完整性，而 CAP 中的 C 是指分布式节点中的数据一致性</li>
+<li>ACID 的应用场景是数据库事务，CAP 关注的是分布式系统数据读写</li>
+<li>ACID 中的 A（Atomicity）和 CAP 中的 A（Availability）意义完全不同</li>
 </ul>
-<h1 id="个人思考"><a href="#个人思考" class="headerlink" title="个人思考"></a>个人思考</h1><p>分层架构主要用于单体服务，尤其是早期的 Web 服务用的比较多。</p>
+<p>这里需要补充一点，上述理解可以认为是将 ACID 限制在单机事务。如果放在分布式场景，ACID 特性理解为 CAP 中一致性的边界，最强的一致性。但这需要一些分布式协议来支持，如：二阶段提交协议，TCC协议等。</p>
+<h1 id="BASE"><a href="#BASE" class="headerlink" title="BASE"></a>BASE</h1><p>核心思想：即使无法做到强一致性（CAP 的一致性就是强一致性），但应用可以采用适合的方式达到最终一致性。具有如下特点：</p>
+<ul>
+<li>基本可用（Basically Available）：分布式系统在出现故障时，允许损失部分可用性，即保证核心可用。</li>
+<li>软状态（Soft State）：允许系统存在中间状态，而该中间状态不会影响系统整体可用性。这里的中间状态就是 CAP 理论中的数据不一致。</li>
+<li>最终一致性（Eventual Consistency）：系统中的所有数据副本经过一定时间后，最终能够达到一致的状态。</li>
+</ul>
+<h2 id="与-CAP-区别-1"><a href="#与-CAP-区别-1" class="headerlink" title="与 CAP 区别"></a>与 CAP 区别</h2><p>BASE 理论本质上是对 CAP 的延伸和补充，更具体地说，是对 CAP 中 AP 方案的一个补充。</p>
+<ul>
+<li>AP 方案中牺牲一致性只是指分区期间，而不是永远放弃一致性。</li>
+<li>CAP 理论是忽略延时的，而实际应用中延时是无法避免的。</li>
+</ul>
 <h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><ol>
-<li>《从 0 开始学架构》 <a target="_blank" rel="noopener" href="https://time.geekbang.org/column/intro/100006601?tab=catalog">https://time.geekbang.org/column/intro/100006601?tab=catalog</a></li>
+<li><a target="_blank" rel="noopener" href="https://time.geekbang.org/column/intro/100006601?tab=catalog">从 0 开始学架构</a></li>
 </ol>
 
     </div>
@@ -295,7 +308,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://m.fanruo.net/2022/05/16/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-9-%E5%8F%AF%E6%89%A9%E5%B1%95%E6%9E%B6%E6%9E%84%E4%B9%8B%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/" title="架构设计 9-可扩展架构之分层架构">https://m.fanruo.net/2022/05/16/架构设计-9-可扩展架构之分层架构/</a>
+    <a href="https://m.fanruo.net/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-3-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BCAP%E7%90%86%E8%AE%BA/" title="架构设计 3-高可用架构之CAP理论">https://m.fanruo.net/2022/05/01/架构设计-3-高可用架构之CAP理论/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/zh-CN" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-ND</a> 许可协议。转载请注明出处！
@@ -307,7 +320,7 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" rel="tag"># 架构设计</a>
-              <a href="/tags/%E5%8F%AF%E6%89%A9%E5%B1%95%E6%9E%B6%E6%9E%84/" rel="tag"># 可扩展架构</a>
+              <a href="/tags/%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84/" rel="tag"># 高可用架构</a>
           </div>
 
         
@@ -316,12 +329,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/05/14/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-8-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86/" rel="prev" title="架构设计 8-高可用架构设计之故障处理">
-      <i class="fa fa-chevron-left"></i> 架构设计 8-高可用架构设计之故障处理
+    <a href="/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-2-%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/" rel="prev" title="架构设计 2-高性能架构">
+      <i class="fa fa-chevron-left"></i> 架构设计 2-高性能架构
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/05/16/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-10-%E5%8F%AF%E6%89%A9%E5%B1%95%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%9D%A2%E5%90%91%E6%9C%8D%E5%8A%A1%E6%8B%86%E5%88%86%E6%9E%B6%E6%9E%84/" rel="next" title="架构设计 10-可扩展架构之面向服务拆分架构">
-      架构设计 10-可扩展架构之面向服务拆分架构 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/05/10/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-4-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BFMEA%E6%96%B9%E6%B3%95/" rel="next" title="架构设计 4-高可用架构之FMEA方法">
+      架构设计 4-高可用架构之FMEA方法 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -382,7 +395,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%80%9D%E6%83%B3"><span class="nav-number">1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8B%86%E5%88%86%E6%80%9D%E8%B7%AF"><span class="nav-number">2.</span> <span class="nav-text">拆分思路</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%A2%E5%90%91%E6%B5%81%E7%A8%8B%E6%8B%86%E5%88%86"><span class="nav-number">2.1.</span> <span class="nav-text">面向流程拆分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%A2%E5%90%91%E6%9C%8D%E5%8A%A1%E6%8B%86%E5%88%86"><span class="nav-number">2.2.</span> <span class="nav-text">面向服务拆分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%A2%E5%90%91%E5%8A%9F%E8%83%BD%E6%8B%86%E5%88%86"><span class="nav-number">2.3.</span> <span class="nav-text">面向功能拆分</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">分层架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#C-x2F-S-%E6%9E%B6%E6%9E%84%E3%80%81B-x2F-S-%E6%9E%B6%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">C&#x2F;S 架构、B&#x2F;S 架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MVC-%E6%9E%B6%E6%9E%84%E3%80%81MVP-%E6%9E%B6%E6%9E%84"><span class="nav-number">3.2.</span> <span class="nav-text">MVC 架构、MVP 架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%BB%E8%BE%91%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="nav-number">3.3.</span> <span class="nav-text">逻辑分层架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E8%A6%81%E7%82%B9"><span class="nav-number">3.4.</span> <span class="nav-text">核心要点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">3.5.</span> <span class="nav-text">优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-number">3.5.1.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">3.5.2.</span> <span class="nav-text">缺点</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%AA%E4%BA%BA%E6%80%9D%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">个人思考</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#reference"><span class="nav-number">5.</span> <span class="nav-text">reference</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CAP-%E7%90%86%E8%AE%BA"><span class="nav-number">1.</span> <span class="nav-text">CAP 理论</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CAP-%E7%89%B9%E7%82%B9%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">CAP 特点：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CAP-%E5%BA%94%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">CAP 应用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E7%BB%86%E8%8A%82"><span class="nav-number">4.</span> <span class="nav-text">一些细节</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#CAP-%E5%85%B3%E6%B3%A8%E7%9A%84%E7%B2%92%E5%BA%A6%E6%98%AF%E6%95%B0%E6%8D%AE%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E6%95%B4%E4%B8%AA%E7%B3%BB%E7%BB%9F"><span class="nav-number">4.1.</span> <span class="nav-text">CAP 关注的粒度是数据，而不是整个系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CAP-%E6%98%AF%E5%BF%BD%E7%95%A5%E7%BD%91%E7%BB%9C%E5%BB%B6%E8%BF%9F%E7%9A%84"><span class="nav-number">4.2.</span> <span class="nav-text">CAP 是忽略网络延迟的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E5%B8%B8%E8%BF%90%E8%A1%8C%E6%83%85%E5%86%B5%E4%B8%8B%EF%BC%8C%E4%B8%8D%E5%AD%98%E5%9C%A8-CP-%E5%92%8C-AP-%E7%9A%84%E9%80%89%E6%8B%A9%EF%BC%8C%E5%8F%AF%E4%BB%A5%E5%90%8C%E6%97%B6%E6%BB%A1%E8%B6%B3-CA"><span class="nav-number">4.3.</span> <span class="nav-text">正常运行情况下，不存在 CP 和 AP 的选择，可以同时满足 CA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%BE%E5%BC%83%E5%B9%B6%E4%B8%8D%E7%AD%89%E4%BA%8E%E4%BB%80%E4%B9%88%E9%83%BD%E4%B8%8D%E5%81%9A%EF%BC%8C%E9%9C%80%E8%A6%81%E4%B8%BA%E5%88%86%E5%8C%BA%E6%81%A2%E5%A4%8D%E5%90%8E%E5%81%9A%E5%87%86%E5%A4%87"><span class="nav-number">4.4.</span> <span class="nav-text">放弃并不等于什么都不做，需要为分区恢复后做准备</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ACID"><span class="nav-number">5.</span> <span class="nav-text">ACID</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E-CAP-%E5%8C%BA%E5%88%AB"><span class="nav-number">5.1.</span> <span class="nav-text">与 CAP 区别</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BASE"><span class="nav-number">6.</span> <span class="nav-text">BASE</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E-CAP-%E5%8C%BA%E5%88%AB-1"><span class="nav-number">6.1.</span> <span class="nav-text">与 CAP 区别</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#reference"><span class="nav-number">7.</span> <span class="nav-text">reference</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -533,7 +546,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'HiYu.github.io',
       owner       : 'HiYu',
       admin       : ['HiYu'],
-      id          : '5ff7ef6a9609732125801c404fb7627c',
+      id          : 'd6e0da3baf1756fa46e898816fe09845',
         language: 'en | es-ES | fr | ru | zh-CN | zh-TW',
       distractionFreeMode: true
     });
