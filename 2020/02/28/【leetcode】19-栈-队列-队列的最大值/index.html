@@ -322,25 +322,7 @@
 
 
 
-      <div class="tabs tabs-comment">
-        <ul class="nav-tabs">
-            <li class="tab"><a href="#comment-giscus">giscus</a></li>
-            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
-        </ul>
-        <div class="tab-content">
-            <div class="tab-pane giscus" id="comment-giscus">
-              
-  
-  <div class="comments giscus-container">
-  </div>
-  
-  
-            </div>
-            <div class="tab-pane gitalk" id="comment-gitalk">
-              <div class="comments gitalk-container"></div>
-            </div>
-        </div>
-      </div>
+    <div class="comments gitalk-container"></div>
 </div>
   </main>
 
@@ -402,33 +384,6 @@
 
 
 
-<script class="next-config" data-name="giscus" type="application/json">{"enable":true,"repo":"HiYu.github.io","repo_id":null,"category":null,"category_id":null,"mapping":"pathname","reactions_enabled":1,"emit_metadata":1,"theme":"light","lang":"en","input_position":"bottom","loading":"lazy"}</script>
-
-<script>
-document.addEventListener('page:loaded', () => {
-  if (!CONFIG.page.comments) return;
-
-  NexT.utils.loadComments('.giscus-container')
-    .then(() => NexT.utils.getScript('https://giscus.app/client.js', {
-      attributes: {
-        async                   : true,
-        crossOrigin             : 'anonymous',
-        'data-repo'             : CONFIG.giscus.repo,
-        'data-repo-id'          : CONFIG.giscus.repo_id,
-        'data-category'         : CONFIG.giscus.category,
-        'data-category-id'      : CONFIG.giscus.category_id,
-        'data-mapping'          : CONFIG.giscus.mapping,
-        'data-reactions-enabled': CONFIG.giscus.reactions_enabled,
-        'data-emit-metadata'    : CONFIG.giscus.emit_metadata,
-        'data-theme'            : CONFIG.giscus.theme,
-        'data-lang'             : CONFIG.giscus.lang,
-        'data-input-position'   : CONFIG.giscus.input_position,
-        'data-loading'          : CONFIG.giscus.loading
-      },
-      parentNode: document.querySelector('.giscus-container')
-    }));
-});
-</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
 
 <script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"HiYu","repo":"HiYu.github.io","client_id":"f2b3a11984c32f7b9148","client_secret":"455bc8ef7a292a46b430a5d965652175b57eaced","admin_user":"HiYu","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"en | es-ES | fr | ru | zh-CN | zh-TW","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"b31ab973455bd8917a5f36029d2e0532"}</script>
