@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"m.fanruo.net","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.16.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第二部分，主要介绍高性能数据库（包括关系数据库、NoSQL）的设计、缓存设计、单机高性能、集群高性能（负载均衡）等。深入了解架构设计过程中遇到的高性能问题以及解决方案。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="架构设计 2-高性能架构">
+<meta property="og:url" content="https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-2-%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:site_name" content="凡 若">
+<meta property="og:description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第二部分，主要介绍高性能数据库（包括关系数据库、NoSQL）的设计、缓存设计、单机高性能、集群高性能（负载均衡）等。深入了解架构设计过程中遇到的高性能问题以及解决方案。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-04-30T13:32:18.000Z">
+<meta property="article:modified_time" content="2022-05-13T14:27:52.970Z">
+<meta property="article:author" content="Frank">
+<meta property="article:tag" content="架构设计">
+<meta property="article:tag" content="高性能架构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-2-%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-2-%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/","path":"2022/04/30/架构设计-2-高性能架构/","title":"架构设计 2-高性能架构"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>架构设计 2-高性能架构 | 凡 若</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">凡 若</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">初心 读书 知新 生活</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%AB%98%E6%80%A7%E8%83%BD%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">1.</span> <span class="nav-text">高性能关系型数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB"><span class="nav-number">1.1.</span> <span class="nav-text">读写分离</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8"><span class="nav-number">1.2.</span> <span class="nav-text">分库分表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%BA%93"><span class="nav-number">1.2.1.</span> <span class="nav-text">分库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E8%A1%A8"><span class="nav-number">1.2.2.</span> <span class="nav-text">分表</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%AB%98%E6%80%A7%E8%83%BDNoSQL%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">2.</span> <span class="nav-text">高性能NoSQL数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E7%B3%BB%E6%95%B0%E6%8D%AE%E5%BA%93%E7%BC%BA%E7%82%B9"><span class="nav-number">2.1.</span> <span class="nav-text">关系数据库缺点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84-NoSQL-%E6%96%B9%E6%A1%88"><span class="nav-number">2.2.</span> <span class="nav-text">常见的 NoSQL 方案</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%AB%98%E6%80%A7%E8%83%BD%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">高性能缓存架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E7%9A%84%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E8%A6%81%E7%82%B9"><span class="nav-number">3.1.</span> <span class="nav-text">缓存的架构设计要点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F"><span class="nav-number">3.1.1.</span> <span class="nav-text">缓存穿透</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9"><span class="nav-number">3.1.2.</span> <span class="nav-text">缓存雪崩</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E7%83%AD%E7%82%B9"><span class="nav-number">3.1.3.</span> <span class="nav-text">缓存热点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">实现方式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8D%95%E6%9C%BA%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%AB%98%E6%80%A7%E8%83%BD%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.</span> <span class="nav-text">单机服务器高性能模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#PPC%E5%92%8CTPC"><span class="nav-number">4.1.</span> <span class="nav-text">PPC和TPC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PPC"><span class="nav-number">4.1.1.</span> <span class="nav-text">PPC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TPC"><span class="nav-number">4.1.2.</span> <span class="nav-text">TPC</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reactor%E5%92%8CProactor"><span class="nav-number">4.2.</span> <span class="nav-text">Reactor和Proactor</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Reactor"><span class="nav-number">4.2.1.</span> <span class="nav-text">Reactor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Proactor"><span class="nav-number">4.2.2.</span> <span class="nav-text">Proactor</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">5.</span> <span class="nav-text">负载均衡</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E7%B1%BB"><span class="nav-number">5.1.</span> <span class="nav-text">分类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DNS-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">5.1.1.</span> <span class="nav-text">DNS 负载均衡</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A1%AC%E4%BB%B6%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">5.1.2.</span> <span class="nav-text">硬件负载均衡</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%AF%E4%BB%B6%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">5.1.3.</span> <span class="nav-text">软件负载均衡</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E5%88%99"><span class="nav-number">5.2.</span> <span class="nav-text">原则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%97%E6%B3%95"><span class="nav-number">5.3.</span> <span class="nav-text">算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%E5%B9%B3%E5%9D%87%E7%B1%BB"><span class="nav-number">5.3.1.</span> <span class="nav-text">任务平均类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E7%B1%BB"><span class="nav-number">5.3.2.</span> <span class="nav-text">负载均衡类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E6%9C%80%E4%BC%98%E7%B1%BB"><span class="nav-number">5.3.3.</span> <span class="nav-text">性能最优类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hash-%E7%B1%BB"><span class="nav-number">5.3.4.</span> <span class="nav-text">Hash 类</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#reference"><span class="nav-number">6.</span> <span class="nav-text">reference</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Frank</p>
+  <div class="site-description" itemprop="description">初心 读书 知新 生活</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/2022/04/30/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-2-%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Frank">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="架构设计 2-高性能架构 | 凡 若">
+      <meta itemprop="description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第二部分，主要介绍高性能数据库（包括关系数据库、NoSQL）的设计、缓存设计、单机高性能、集群高性能（负载均衡）等。深入了解架构设计过程中遇到的高性能问题以及解决方案。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          架构设计 2-高性能架构
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-04-30 21:32:18" itemprop="dateCreated datePublished" datetime="2022-04-30T21:32:18+08:00">2022-04-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-05-13 22:27:52" itemprop="dateModified" datetime="2022-05-13T22:27:52+08:00">2022-05-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" itemprop="url" rel="index"><span itemprop="name">架构设计</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>6.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>6 分钟</span>
+    </span>
+</div>
+
+            <div class="post-description">导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第二部分，主要介绍高性能数据库（包括关系数据库、NoSQL）的设计、缓存设计、单机高性能、集群高性能（负载均衡）等。深入了解架构设计过程中遇到的高性能问题以及解决方案。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>扫描左侧二维码 关注公众号 回复 “架构设计” 获取架构设计笔记完整思维导图</p>
+</blockquote>
+<h1 id="高性能关系型数据库"><a href="#高性能关系型数据库" class="headerlink" title="高性能关系型数据库"></a>高性能关系型数据库</h1><h2 id="读写分离"><a href="#读写分离" class="headerlink" title="读写分离"></a>读写分离</h2><p>读写分离的基本原理是将数据库读写操作分散到不同的节点上。<br>设计复杂度</p>
+<ul>
+<li>主从复制延迟<ul>
+<li>写操作后的读操作指定发给数据库主服务器</li>
+<li>读从机失败后再读一次主机</li>
+<li>关键业务读写操作全部指向主机，非关键业务采用读写分离</li>
+</ul>
+</li>
+<li>分配机制<ul>
+<li>程序代码封装 如 TDDL</li>
+<li>中间件封装 如 MySQL Router</li>
+</ul>
+</li>
+</ul>
+<p>“读写分离”，读写分离分散了数据库读写操作的压力，但没有分散存储压力。</p>
+<h2 id="分库分表"><a href="#分库分表" class="headerlink" title="分库分表"></a>分库分表</h2><p>单库数据量大的风险</p>
+<ul>
+<li>数据量太大，读写的性能会下降，即使有索引，索引也会变得很大，性能同样会下降。</li>
+<li>数据文件会变得很大，数据库备份和恢复需要耗费很长时间。</li>
+<li>数据文件越大，极端情况下丢失数据的风险越高</li>
+</ul>
+<p>常见的分散存储的方法“分库分表”，其中包括“分库”和“分表”两大类。</p>
+<h3 id="分库"><a href="#分库" class="headerlink" title="分库"></a>分库</h3><p>业务分库指的是按照业务模块将数据分散到不同的数据库服务器。问题：</p>
+<ul>
+<li>.join 操作问题</li>
+<li>事务问题</li>
+<li>成本问题</li>
+</ul>
+<p>优点：分散存储和访问压力</p>
+<h3 id="分表"><a href="#分表" class="headerlink" title="分表"></a>分表</h3><p>将不同业务数据分散存储到不同的数据库服务器，能够支撑百万甚至千万用户规模的业务，但如果业务继续发展，同一业务的单表数据也会达到单台数据库服务器的处理瓶颈。如果几亿用户数据，全部存放在一台数据库服务器的一张表中，肯定是无法满足性能要求的，此时就需要对单表数据进行拆分。</p>
+<p>单表数据拆分有两种方式：垂直分表和水平分表。</p>
+<ul>
+<li><p>垂直分表</p>
+<ul>
+<li>垂直分表适合将表中某些不常用且占了大量空间的列拆分出去</li>
+<li>垂直分表引入的复杂性主要体现在表操作的数量要增加。</li>
+</ul>
+</li>
+<li><p>水平分表</p>
+<ul>
+<li>路由<ul>
+<li>范围路由</li>
+<li>Hash路由</li>
+<li>配置路由</li>
+</ul>
+</li>
+<li>join 操作</li>
+<li>count() 操作<ul>
+<li>count() 相加</li>
+<li>记录数表</li>
+</ul>
+</li>
+<li>order by 操作</li>
+</ul>
+</li>
+</ul>
+<h1 id="高性能NoSQL数据库"><a href="#高性能NoSQL数据库" class="headerlink" title="高性能NoSQL数据库"></a>高性能NoSQL数据库</h1><h2 id="关系数据库缺点"><a href="#关系数据库缺点" class="headerlink" title="关系数据库缺点"></a>关系数据库缺点</h2><ul>
+<li>关系数据库存储的是行记录，无法存储数据结构</li>
+<li>关系数据库的 schema 扩展很不方便</li>
+<li>关系数据库在大数据场景下 I&#x2F;O 较高</li>
+<li>关系数据库的全文搜索功能比较弱</li>
+</ul>
+<h2 id="常见的-NoSQL-方案"><a href="#常见的-NoSQL-方案" class="headerlink" title="常见的 NoSQL 方案"></a>常见的 NoSQL 方案</h2><ul>
+<li>K-V 存储：解决关系数据库无法存储数据结构的问题，以 Redis 为代表</li>
+<li>文档数据库：解决关系数据库强 schema 约束的问题，以 MongoDB 为代表</li>
+<li>列式数据库：解决关系数据库大数据场景下的 I&#x2F;O 问题，以 HBase 为代表</li>
+<li>全文搜索引擎：解决关系数据库的全文搜索性能问题，以 Elasticsearch 为代表</li>
+</ul>
+<h1 id="高性能缓存架构"><a href="#高性能缓存架构" class="headerlink" title="高性能缓存架构"></a>高性能缓存架构</h1><p>单纯依靠存储系统的性能提升不够的，典型的场景</p>
+<ul>
+<li>需要经过复杂运算后得出的数据，存储系统无能为力</li>
+<li>读多写少的数据，存储系统有心无力</li>
+</ul>
+<h2 id="缓存的架构设计要点"><a href="#缓存的架构设计要点" class="headerlink" title="缓存的架构设计要点"></a>缓存的架构设计要点</h2><h3 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a>缓存穿透</h3><p>缓存穿透是指缓存没有发挥作用，业务系统虽然去缓存查询数据，但缓存中没有数据，业务系统需要再次去存储系统查询数据。两种情况：	</p>
+<ul>
+<li>存储数据不存在，如果查询存储系统的数据没有找到，则直接设置一个默认值存到缓存中。</li>
+<li>缓存数据生成耗费大量时间或者资源。</li>
+</ul>
+<h3 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h3><p>缓存雪崩是指当缓存失效（过期）后引起系统性能急剧下降的情况。常见解决方法：</p>
+<ul>
+<li><p>更新锁机制</p>
+<ul>
+<li>对缓存更新操作进行加锁保护，保证只有一个线程能够进行缓存更新，未能获取更新锁的线程要么等待锁释放后重新读取缓存，要么就返回空值或者默认值</li>
+<li>分布式集群的业务系统要实现更新锁机制，需要用到分布式锁</li>
+</ul>
+</li>
+<li><p>后台更新机制</p>
+<ul>
+<li>由后台线程来更新缓存，而不是由业务线程来更新缓存，缓存本身的有效期设置为永久，后台线程定时更新缓存</li>
+<li>当缓存系统内存不够时，会“踢掉”一些缓存数据，从缓存被“踢掉”到下一次定时更新缓存的这段时间内，业务线程读取缓存返回空值，而业务线程本身又不会去更新缓存，因此业务上看到的现象就是数据丢了<ul>
+<li>后台线程除了定时更新缓存，还要频繁地去读取缓存（例如，1 秒或者 100 毫秒读取一次），如果发现缓存被“踢了”就立刻更新缓存</li>
+<li>业务线程发现缓存失效后，通过消息队列发送一条消息通知后台线程更新缓存。</li>
+</ul>
+</li>
+<li>优点<ul>
+<li>后台更新既适应单机多线程的场景，也适合分布式集群的场景，相比更新锁机制要简单一些。</li>
+<li>后台更新机制还适合业务刚上线的时候进行缓存预热。缓存预热指系统上线后，将相关的缓存数据直接加载到缓存系统，而不是等待用户访问才来触发缓存加载。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="缓存热点"><a href="#缓存热点" class="headerlink" title="缓存热点"></a>缓存热点</h3><ul>
+<li>对于一些特别热点的数据，如果大部分甚至所有的业务请求都命中同一份缓存数据，则这份数据所在的缓存服务器的压力也很大</li>
+<li>缓存热点的解决方案就是复制多份缓存副本，将请求分散到多个缓存服务器上，减轻缓存热点导致的单台缓存服务器压力</li>
+<li>缓存副本设计有一个细节需要注意，就是不同的缓存副本不要设置统一的过期时间，否则就会出现所有缓存副本同时生成同时失效的情况，从而引发缓存雪崩效应。正确的做法是设定一个过期时间范围，不同的缓存副本的过期时间是指定范围内的随机值</li>
+</ul>
+<h2 id="实现方式"><a href="#实现方式" class="headerlink" title="实现方式"></a>实现方式</h2><ul>
+<li>程序代码实现”的中间层方式</li>
+<li>独立的中间件</li>
+</ul>
+<h1 id="单机服务器高性能模式"><a href="#单机服务器高性能模式" class="headerlink" title="单机服务器高性能模式"></a>单机服务器高性能模式</h1><p>高性能架构设计主要集中在两方面</p>
+<ul>
+<li>尽量提升单服务器的性能，将单服务器的性能发挥到极致</li>
+<li>如果单服务器无法支撑性能，设计服务器集群方案</li>
+</ul>
+<p> 单服务器高性能的关键，服务器采取的并发模型：</p>
+<ul>
+<li>服务器如何管理连接</li>
+<li>服务器如何处理请求</li>
+</ul>
+<h2 id="PPC和TPC"><a href="#PPC和TPC" class="headerlink" title="PPC和TPC"></a>PPC和TPC</h2><h3 id="PPC"><a href="#PPC" class="headerlink" title="PPC"></a>PPC</h3><p>Process Per Connection 的缩写，其含义是指每次有新的连接就新建一个进程去专门处理这个连接的请求，这是传统的 UNIX 网络服务器所采用的模型。PPC 模式实现简单，比较适合服务器的连接数没那么多的情况，例如数据库服务器。</p>
+<p>弊端：</p>
+<ul>
+<li>fork 代价高：站在操作系统的角度，创建一个进程的代价是很高的，需要分配很多内核资源，需要将内存映像从父进程复制到子进程</li>
+<li>父子进程通信复杂：父进程“fork”子进程时，文件描述符可以通过内存映像复制从父进程传到子进程，但“fork”完成后，父子进程通信就比较麻烦了，需要采用 IPC（Interprocess Communication）之类的进程通信方案</li>
+<li>支持的并发连接数量有限：如果每个连接存活时间比较长，而且新的连接又源源不断的进来，则进程数量会越来越多，操作系统进程调度和切换的频率也越来越高，系统的压力也会越来越大。因此，一般情况下，PPC 方案能处理的并发连接数量最大也就几百</li>
+</ul>
+<p>prefork</p>
+<ul>
+<li>prefork 就是提前创建进程（pre-fork）</li>
+</ul>
+<h3 id="TPC"><a href="#TPC" class="headerlink" title="TPC"></a>TPC</h3><p>Thread Per Connection 的缩写，其含义是指每次有新的连接就新建一个线程去专门处理这个连接的请求。TPC 虽然解决了 fork 代价高和进程通信复杂的问题。</p>
+<p>弊端</p>
+<ul>
+<li>创建线程虽然比创建进程代价低，但并不是没有代价，高并发时（例如每秒上万连接）还是有性能问题。</li>
+<li>无须进程间通信，但是线程间的互斥和共享又引入了复杂度，可能一不小心就导致了死锁问题。</li>
+<li>多线程会出现互相影响的情况，某个线程出现异常时，可能导致整个进程退出（例如内存越界）</li>
+<li>TPC 还是存在 CPU 线程调度和切换代价的问题</li>
+</ul>
+<p>prethread</p>
+<ul>
+<li>prethread 模式会预先创建线程</li>
+</ul>
+<p>TPC 方案本质上和 PPC 方案基本类似，在并发几百连接的场景下，反而更多地是采用 PPC 的方案，因为 PPC 方案不会有死锁的风险，也不会多进程互相影响，稳定性更高。</p>
+<h2 id="Reactor和Proactor"><a href="#Reactor和Proactor" class="headerlink" title="Reactor和Proactor"></a>Reactor和Proactor</h2><p>I&#x2F;O 多路复用技术归纳起来有两个关键实现点</p>
+<ul>
+<li>当多条连接共用一个阻塞对象后，进程只需要在一个阻塞对象上等待，而无须再轮询所有连接，常见的实现方式有 select、epoll、kqueue 等</li>
+<li>当某条连接有新的数据可以处理时，操作系统会通知进程，进程从阻塞状态返回，开始进行业务处理。</li>
+</ul>
+<h3 id="Reactor"><a href="#Reactor" class="headerlink" title="Reactor"></a>Reactor</h3><p>I&#x2F;O 多路复用结合线程池</p>
+<ul>
+<li>来了一个事件我就有相应的反应”，这里的“我”就是 Reactor，具体的反应就是我们写的代码，Reactor 会根据事件类型来调用相应的代码进行处理</li>
+<li>Reactor 模式也叫 Dispatcher 模式，更加贴近模式本身的含义，即 I&#x2F;O 多路复用统一监听事件，收到事件后分配（Dispatch）给某个进程。</li>
+</ul>
+<p>Reactor 是非阻塞同步网络模型，因为真正的 read 和 send 操作都需要用户进程同步操作。这里的“同步”指用户进程在执行 read 和 send 这类 I&#x2F;O 操作的时候是同步的。<br>Reactor 核心：</p>
+<ul>
+<li>Reactor ：负责监听和分配事件</li>
+<li>处理资源池：负责处理事件</li>
+</ul>
+<p>Reactor 模式</p>
+<ul>
+<li>单 Reactor 单进程 &#x2F; 线程<ul>
+<li>优点<ul>
+<li>单 Reactor 单进程的模式优点就是很简单，没有进程间通信，没有进程竞争，全部都在同一个进程内完成</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>只有一个进程，无法发挥多核 CPU 的性能；只能采取部署多个系统来利用多核 CPU，但这样会带来运维复杂度，本来只要维护一个系统，用这种方式需要在一台机器上维护多套系统。</li>
+<li>Handler 在处理某个连接上的业务时，整个进程无法处理其他连接的事件，很容易导致性能瓶颈</li>
+</ul>
+</li>
+<li>使用场景<ul>
+<li>单 Reactor 单进程的方案在实践中应用场景不多，只适用于业务处理非常快速的场景</li>
+<li>目前比较著名的开源软件中使用单 Reactor 单进程的是 Redis</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>单 Reactor 多线程<ul>
+<li>优点<ul>
+<li>单 Reator 多线程方案能够充分利用多核多 CPU 的处理能力</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>多线程数据共享和访问比较复杂</li>
+<li>Reactor 承担所有事件的监听和响应，只在主线程中运行，瞬间高并发时会成为性能瓶颈。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>多 Reactor 多进程 &#x2F; 线程<ul>
+<li>优点<ul>
+<li>父进程和子进程的职责非常明确，父进程只负责接收新连接，子进程负责完成后续的业务处理</li>
+<li>父进程和子进程的交互很简单，父进程只需要把新连接传给子进程，子进程无须返回数据。</li>
+<li>子进程之间是互相独立的，无须同步共享之类的处理（这里仅限于网络模型相关的 select、read、send 等无须同步共享，“业务处理”还是有可能需要同步共享的）。</li>
+</ul>
+</li>
+<li>使用场景<ul>
+<li>Nginx 采用的是多 Reactor 多进程</li>
+<li>Memcache 和 Netty采用多 Reactor 多线程</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="Proactor"><a href="#Proactor" class="headerlink" title="Proactor"></a>Proactor</h3><ul>
+<li>理论上 Proactor 比 Reactor 效率要高一些，异步 I&#x2F;O 能够充分利用 DMA 特性，让 I&#x2F;O 操作与计算重叠，但要实现真正的异步 I&#x2F;O，操作系统需要做大量的工作</li>
+<li>Reactor 可以理解为“来了事件我通知你，你来处理”，而 Proactor 可以理解为“来了事件我来处理，处理完了我通知你”。这里的“我”就是操作系统内核，“事件”就是有新连接、有数据可读、有数据可写的这些 I&#x2F;O 事件，“你”就是我们的程序代码。</li>
+</ul>
+<h1 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h1><p>高性能集群的复杂性主要体现在需要增加一个任务分配器，以及为任务选择一个合适的任务分配算法。</p>
+<p>不同的任务分配算法目标是不一样的，有的基于负载考虑，有的基于性能（吞吐量、响应时间）考虑，有的基于业务考虑。</p>
+<h2 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h2><p>常见的负载均衡系统包括 3 种：DNS 负载均衡、硬件负载均衡和软件负载均衡。</p>
+<h3 id="DNS-负载均衡"><a href="#DNS-负载均衡" class="headerlink" title="DNS 负载均衡"></a>DNS 负载均衡</h3><p>DNS 是最简单也是最常见的负载均衡方式，一般用来实现地理级别的均衡。</p>
+<p>优点<br>    - 简单、成本低：负载均衡工作交给 DNS 服务器处理，无须自己开发或者维护负载均衡设备。<br>    - 就近访问，提升访问速度：DNS 解析时可以根据请求来源 IP，解析成距离用户最近的服务器地址，可以加快访问速度，改善性能。</p>
+<p>缺点<br>    - 更新不及时：DNS 缓存的时间比较长，修改 DNS 配置后，由于缓存的原因，还是有很多用户会继续访问修改前的 IP，这样的访问会失败，达不到负载均衡的目的，并且也影响用户正常使用业务。<br>    - 扩展性差：DNS 负载均衡的控制权在域名商那里，无法根据业务特点针对其做更多的定制化功能和扩展特性。<br>    - 分配策略比较简单：DNS 负载均衡支持的算法少；不能区分服务器的差异（不能根据系统与服务的状态来判断负载）；也无法感知后端服务器的状态。</p>
+<h3 id="硬件负载均衡"><a href="#硬件负载均衡" class="headerlink" title="硬件负载均衡"></a>硬件负载均衡</h3><p>硬件负载均衡是通过单独的硬件设备来实现负载均衡功能，这类设备和路由器、交换机类似，可以理解为一个用于负载均衡的基础网络设备。主要有 F5 &amp; A10 等。</p>
+<p>优点：</p>
+<ul>
+<li>功能强大：全面支持各层级的负载均衡，支持全面的负载均衡算法，支持全局负载均衡。</li>
+<li>性能强大：对比一下，软件负载均衡支持到 10 万级并发已经很厉害了，硬件负载均衡可以支持 100 万以上的并发。</li>
+<li>稳定性高：商用硬件负载均衡，经过了良好的严格测试，经过大规模使用，稳定性高。</li>
+<li>支持安全防护：硬件均衡设备除具备负载均衡功能外，还具备防火墙、防 DDoS 攻击等安全功能。</li>
+</ul>
+<p>缺点</p>
+<ul>
+<li>价格昂贵</li>
+<li>扩展能力差</li>
+</ul>
+<h3 id="软件负载均衡"><a href="#软件负载均衡" class="headerlink" title="软件负载均衡"></a>软件负载均衡</h3><p>软件负载均衡通过负载均衡软件来实现负载均衡功能，常见的有 Nginx 和 LVS，其中 Nginx 是软件的 7 层负载均衡，LVS 是 Linux 内核的 4 层负载均衡。4 层和 7 层的区别就在于协议和灵活性。</p>
+<p>优点</p>
+<ul>
+<li>简单：无论是部署还是维护都比较简单。</li>
+<li>便宜：只要买个 Linux 服务器，装上软件即可。</li>
+<li>灵活：4 层和 7 层负载均衡可以根据业务进行选择；也可以根据业务进行比较方便的扩展，例如，可以通过 Nginx 的插件来实现业务的定制化功能。</li>
+</ul>
+<p>缺点</p>
+<ul>
+<li>性能一般：一个 Nginx 大约能支撑 5 万并发</li>
+<li>功能没有硬件负载均衡那么强大。</li>
+<li>一般不具备防火墙和防 DDoS 攻击等安全功能。</li>
+</ul>
+<h2 id="原则"><a href="#原则" class="headerlink" title="原则"></a>原则</h2><ul>
+<li>DNS 负载均衡用于实现地理级别的负载均衡；</li>
+<li>硬件负载均衡用于实现集群级别的负载均衡；</li>
+<li>软件负载均衡用于实现机器级别的负载均衡。</li>
+</ul>
+<h2 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h2><h3 id="任务平均类"><a href="#任务平均类" class="headerlink" title="任务平均类"></a>任务平均类</h3><p>负载均衡系统将收到的任务平均分配给服务器进行处理，这里的“平均”可以是绝对数量的平均，也可以是比例或者权重上的平均。</p>
+<ul>
+<li><p>轮询</p>
+<ul>
+<li>只要服务器在运行，运行状态是不关注的</li>
+<li>简单”是轮询算法的优点，也是它的缺点</li>
+</ul>
+</li>
+<li><p>加权轮询</p>
+<ul>
+<li>解决不同服务器处理能力有差异的问题</li>
+</ul>
+</li>
+</ul>
+<h3 id="负载均衡类"><a href="#负载均衡类" class="headerlink" title="负载均衡类"></a>负载均衡类</h3><p>负载均衡系统根据服务器的负载来进行分配，这里的负载并不一定是通常意义上我们说的“CPU 负载”，而是系统当前的压力，可以用 CPU 负载来衡量，也可以用连接数、I&#x2F;O 使用率、网卡吞吐量等来衡量系统的压力。负载最低优先：</p>
+<ul>
+<li>LVS 这种 4 层网络负载均衡设备，可以以“连接数”来判断服务器的状态，服务器连接数越大，表明服务器压力越大。</li>
+<li>Nginx 这种 7 层网络负载系统，可以以“HTTP 请求数”来判断服务器状态</li>
+<li>如果我们自己开发负载均衡系统，可以根据业务特点来选择指标衡量系统压力。如果是 CPU 密集型，可以以“CPU 负载”来衡量系统压力；如果是 I&#x2F;O 密集型，可以以“I&#x2F;O 负载”来衡量系统压力。</li>
+</ul>
+<p>优点	</p>
+<ul>
+<li>负载最低优先的算法解决了轮询算法中无法感知服务器状态的问题</li>
+</ul>
+<p>缺点</p>
+<ul>
+<li>最少连接数优先的算法要求负载均衡系统统计每个服务器当前建立的连接，其应用场景仅限于负载均衡接收的任何连接请求都会转发给服务器进行处理，否则如果负载均衡系统和服务器之间是固定的连接池方式，就不适合采取这种算法</li>
+<li>CPU 负载最低优先的算法要求负载均衡系统以某种方式收集每个服务器的 CPU 负载，而且要确定是以 1 分钟的负载为标准，还是以 15 分钟的负载为标准，不存在 1 分钟肯定比 15 分钟要好或者差。不同业务最优的时间间隔是不一样的，时间间隔太短容易造成频繁波动，时间间隔太长又可能造成峰值来临时响应缓慢。</li>
+</ul>
+<h3 id="性能最优类"><a href="#性能最优类" class="headerlink" title="性能最优类"></a>性能最优类</h3><p>负载最低优先类算法是站在服务器的角度来进行分配的，而性能最优优先类算法则是站在客户端的角度来进行分配的，优先将任务分配给处理速度最快的服务器，通过这种方式达到最快响应客户端的目的。</p>
+<p>缺点</p>
+<ul>
+<li>负载均衡系统需要收集和分析每个服务器每个任务的响应时间，在大量任务处理的场景下，这种收集和统计本身也会消耗较多的性能</li>
+<li>为了减少这种统计上的消耗，可以采取采样的方式来统计，需要合适的采样率</li>
+<li>无论是全部统计还是采样统计，都需要选择合适的周期</li>
+</ul>
+<h3 id="Hash-类"><a href="#Hash-类" class="headerlink" title="Hash 类"></a>Hash 类</h3><ul>
+<li>源地址 Hash</li>
+<li>ID Hash</li>
+</ul>
+<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://time.geekbang.org/column/intro/100006601?tab=catalog">从 0 开始学架构</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" rel="tag"># 架构设计</a>
+              <a href="/tags/%E9%AB%98%E6%80%A7%E8%83%BD%E6%9E%B6%E6%9E%84/" rel="tag"># 高性能架构</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/04/29/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-1-%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/" rel="prev" title="架构设计 1-基础架构">
+                  <i class="fa fa-chevron-left"></i> 架构设计 1-基础架构
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/05/01/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-3-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E4%B9%8BCAP%E7%90%86%E8%AE%BA/" rel="next" title="架构设计 3-高可用架构之CAP理论">
+                  架构设计 3-高可用架构之CAP理论 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Frank</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">116k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:46</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
