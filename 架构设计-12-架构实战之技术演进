@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-fanruo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-fanruo.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"m.fanruo.net","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.16.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第十二部分。主要介绍了技术演进的动力和演进模式，如不同时期所面临的问题以及该如何处理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="架构设计 12-架构实战之技术演进">
+<meta property="og:url" content="https://m.fanruo.net/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-12-%E6%9E%B6%E6%9E%84%E5%AE%9E%E6%88%98%E4%B9%8B%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B">
+<meta property="og:site_name" content="凡 若">
+<meta property="og:description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第十二部分。主要介绍了技术演进的动力和演进模式，如不同时期所面临的问题以及该如何处理。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-18T11:43:12.000Z">
+<meta property="article:modified_time" content="2022-05-26T13:31:40.943Z">
+<meta property="article:author" content="闲余">
+<meta property="article:tag" content="架构设计">
+<meta property="article:tag" content="可扩展架构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://m.fanruo.net/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-12-%E6%9E%B6%E6%9E%84%E5%AE%9E%E6%88%98%E4%B9%8B%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://m.fanruo.net/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-12-%E6%9E%B6%E6%9E%84%E5%AE%9E%E6%88%98%E4%B9%8B%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B","path":"/架构设计-12-架构实战之技术演进","title":"架构设计 12-架构实战之技术演进"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>架构设计 12-架构实战之技术演进 | 凡 若</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">凡 若</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">初心 读书 知新 生活</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B%E5%8A%A8%E5%8A%9B"><span class="nav-number">1.</span> <span class="nav-text">技术演进动力</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%92%E8%81%94%E7%BD%91%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">互联网技术演进模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8D%E5%90%8C%E6%97%B6%E6%9C%9F%E7%9A%84%E5%B7%AE%E5%88%AB%E4%B8%BB%E8%A6%81%E4%BD%93%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">不同时期的差别主要体现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%9A%E5%8A%A1%E5%A4%8D%E6%9D%82%E6%80%A7"><span class="nav-number">3.1.</span> <span class="nav-text">业务复杂性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%88%9B%E6%9C%9F"><span class="nav-number">3.1.1.</span> <span class="nav-text">初创期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E5%B1%95%E6%9C%9F"><span class="nav-number">3.1.2.</span> <span class="nav-text">发展期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A0%86%E5%8A%9F%E8%83%BD%E6%9C%9F"><span class="nav-number">3.1.2.1.</span> <span class="nav-text">堆功能期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E6%9C%9F"><span class="nav-number">3.1.2.2.</span> <span class="nav-text">优化期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%E6%9C%9F"><span class="nav-number">3.1.2.3.</span> <span class="nav-text">架构期</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AB%9E%E4%BA%89%E6%9C%9F"><span class="nav-number">3.1.3.</span> <span class="nav-text">竞争期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">3.1.3.1.</span> <span class="nav-text">解决方案</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%90%E7%86%9F%E6%9C%9F"><span class="nav-number">3.1.4.</span> <span class="nav-text">成熟期</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E8%A7%84%E6%A8%A1"><span class="nav-number">3.2.</span> <span class="nav-text">用户规模</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8F%E5%8F%98%E5%88%B0%E8%B4%A8%E5%8F%98"><span class="nav-number">3.3.</span> <span class="nav-text">量变到质变</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#reference"><span class="nav-number">4.</span> <span class="nav-text">reference</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">闲余</p>
+  <div class="site-description" itemprop="description">初心 读书 知新 生活</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HiYu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HiYu" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhaoyyuu@gmail.com" title="E-Mail → mailto:zhaoyyuu@gmail.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+     <div class="wechat_channel">
+        <br>
+        <!-- 这里添加你的二维码图片 -->
+        <img src ="/images/wechat.png">
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-12-%E6%9E%B6%E6%9E%84%E5%AE%9E%E6%88%98%E4%B9%8B%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="闲余">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="架构设计 12-架构实战之技术演进 | 凡 若">
+      <meta itemprop="description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第十二部分。主要介绍了技术演进的动力和演进模式，如不同时期所面临的问题以及该如何处理。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          架构设计 12-架构实战之技术演进
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-05-18 19:43:12" itemprop="dateCreated datePublished" datetime="2022-05-18T19:43:12+08:00">2022-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-05-26 21:31:40" itemprop="dateModified" datetime="2022-05-26T21:31:40+08:00">2022-05-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" itemprop="url" rel="index"><span itemprop="name">架构设计</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+            <div class="post-description">导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第十二部分。主要介绍了技术演进的动力和演进模式，如不同时期所面临的问题以及该如何处理。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>扫描左侧二维码 关注公众号 回复 “架构设计” 获取架构设计笔记完整思维导图</p>
+</blockquote>
+<h1 id="技术演进动力"><a href="#技术演进动力" class="headerlink" title="技术演进动力"></a>技术演进动力</h1><ul>
+<li>对于产品类业务：技术创新推动业务发展！</li>
+<li>对于“服务”类的业务：业务发展推动技术的发展！</li>
+</ul>
+<h1 id="互联网技术演进模式"><a href="#互联网技术演进模式" class="headerlink" title="互联网技术演进模式"></a>互联网技术演进模式</h1><p>互联网业务千差万别，但由于它们具有“规模决定一切”的相同点，其发展路径也基本上是一致的。互联网业务发展一般分为几个时期：</p>
+<ul>
+<li>初创期</li>
+<li>发展期</li>
+<li>竞争期</li>
+<li>成熟期</li>
+</ul>
+<h1 id="不同时期的差别主要体现"><a href="#不同时期的差别主要体现" class="headerlink" title="不同时期的差别主要体现"></a>不同时期的差别主要体现</h1><h2 id="业务复杂性"><a href="#业务复杂性" class="headerlink" title="业务复杂性"></a>业务复杂性</h2><h3 id="初创期"><a href="#初创期" class="headerlink" title="初创期"></a>初创期</h3><p>初创期的业务对技术就一个要求：“快”，但这个时候却又是创业团队最弱小的时期，可能就几个技术人员，所以这个时候十八般武艺都需要用上：能买就买，有开源的就用开源的。</p>
+<h3 id="发展期"><a href="#发展期" class="headerlink" title="发展期"></a>发展期</h3><h4 id="堆功能期"><a href="#堆功能期" class="headerlink" title="堆功能期"></a>堆功能期</h4><p>业务进入快速发展期的初期，此时团队规模也不大，业务需求又很紧，最快实现业务需求的方式是继续在原有的系统里面不断地增加新的功能，重构、优化、架构等方面的工作即使想做，也会受制于人力和业务发展的压力而放在一边。</p>
+<h4 id="优化期"><a href="#优化期" class="headerlink" title="优化期"></a>优化期</h4><ul>
+<li>优化派 核心思想是将现有的系统优化</li>
+<li>架构派 核心思想是调整系统架构，主要是将原来的大系统拆分为多个互相配合的小系统。</li>
+</ul>
+<h4 id="架构期"><a href="#架构期" class="headerlink" title="架构期"></a>架构期</h4><ul>
+<li>经过优化期后，如果业务能够继续发展，慢慢就会发现优化也顶不住了，毕竟再怎么优化，系统的能力总是有极限的。</li>
+<li>架构期可以用的手段很多，但归根结底可以总结为一个字“拆”，什么地方都可以拆。</li>
+</ul>
+<h3 id="竞争期"><a href="#竞争期" class="headerlink" title="竞争期"></a>竞争期</h3><ul>
+<li>重复造轮子</li>
+<li>系统交互一团乱麻</li>
+</ul>
+<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><p>平台化：目的在于解决“重复造轮子”的问题。</p>
+<ul>
+<li>存储平台化：淘宝的 TFS、京东 JFS。</li>
+<li>数据库平台化：百度的 DBProxy、淘宝 TDDL。</li>
+<li>缓存平台化：Twitter 的 Twemproxy，豆瓣的 BeansDB、腾讯 TTC。</li>
+</ul>
+<p>服务化：目的在于解决“系统交互”的问题，常见的做法是通过消息队列来完成系统间的异步通知，通过服务框架来完成系统间的同步调用。</p>
+<ul>
+<li>消息队列：淘宝的 Notify、MetaQ，开源的 Kafka、ActiveMQ 等。</li>
+<li>服务框架：Facebook 的 thrift、当当网的 Dubbox、淘宝的 HSF 等。</li>
+</ul>
+<h3 id="成熟期"><a href="#成熟期" class="headerlink" title="成熟期"></a>成熟期</h3><p>此时技术上其实也基本进入了成熟期，该拆的也拆了，该平台化的也平台化了，技术上能做的大动作其实也不多了，更多的是进行优化。这个时候的技术优化没有固定的套路，只能按照竞争的要求，找出自己的弱项，然后逐项优化。在逐项优化时，可以采取之前各个时期采用的手段。</p>
+<h2 id="用户规模"><a href="#用户规模" class="headerlink" title="用户规模"></a>用户规模</h2><p>用户量增大对技术的影响主要体现</p>
+<ul>
+<li>性能要求越来越高</li>
+<li>可用性要求越来越高</li>
+</ul>
+<h2 id="量变到质变"><a href="#量变到质变" class="headerlink" title="量变到质变"></a>量变到质变</h2><ul>
+<li>互联网业务驱动技术发展的两大主要因素是复杂性和用户规模，而这两个因素的本质其实都是“量变带来质变”。</li>
+<li>应对业务质变带来的技术压力，不同时期有不同的处理方式，但不管什么样的方式，其核心目标都是为了满足业务“快”的要求，当发现你的业务快不起来的时候，其实就是技术的水平已经跟不上业务发展的需要了，技术变革和发展的时候就到了。</li>
+</ul>
+<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><ol>
+<li>《从 0 开始学架构》 <a target="_blank" rel="noopener" href="https://time.geekbang.org/column/intro/100006601?tab=catalog">https://time.geekbang.org/column/intro/100006601?tab=catalog</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>闲余
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://m.fanruo.net/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-12-%E6%9E%B6%E6%9E%84%E5%AE%9E%E6%88%98%E4%B9%8B%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B" title="架构设计 12-架构实战之技术演进">https://m.fanruo.net/架构设计-12-架构实战之技术演进</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-ND</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" rel="tag"># 架构设计</a>
+              <a href="/tags/%E5%8F%AF%E6%89%A9%E5%B1%95%E6%9E%B6%E6%9E%84/" rel="tag"># 可扩展架构</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-11-%E5%8F%AF%E6%89%A9%E5%B1%95%E6%9E%B6%E6%9E%84%E4%B9%8B%E5%BE%AE%E5%86%85%E6%A0%B8%E6%9E%B6%E6%9E%84" rel="prev" title="架构设计 11-可扩展架构之微内核架构">
+                  <i class="fa fa-chevron-left"></i> 架构设计 11-可扩展架构之微内核架构
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">闲余</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">116k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:46</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"HiYu","repo":"HiYu.github.io","client_id":"f2b3a11984c32f7b9148","client_secret":"455bc8ef7a292a46b430a5d965652175b57eaced","admin_user":"HiYu","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"en | es-ES | fr | ru | zh-CN | zh-TW","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"69b6584eaae140945330abcd34e16cb0"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

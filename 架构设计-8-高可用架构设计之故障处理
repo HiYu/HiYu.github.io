@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-fanruo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-fanruo.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"m.fanruo.net","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.16.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第八部分，主要介绍故障处理，包口典型表现、原因、常见情况、解决思想以及解决方法。如果异地多活看作事前处理的话，那么故障处理可以看作事后的预案。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="架构设计 8-高可用架构设计之故障处理">
+<meta property="og:url" content="https://m.fanruo.net/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-8-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86">
+<meta property="og:site_name" content="凡 若">
+<meta property="og:description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第八部分，主要介绍故障处理，包口典型表现、原因、常见情况、解决思想以及解决方法。如果异地多活看作事前处理的话，那么故障处理可以看作事后的预案。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-14T00:09:20.000Z">
+<meta property="article:modified_time" content="2022-05-14T01:54:29.514Z">
+<meta property="article:author" content="闲余">
+<meta property="article:tag" content="架构设计">
+<meta property="article:tag" content="高可用架构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://m.fanruo.net/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-8-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://m.fanruo.net/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-8-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86","path":"/架构设计-8-高可用架构设计之故障处理","title":"架构设计 8-高可用架构设计之故障处理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>架构设计 8-高可用架构设计之故障处理 | 凡 若</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">凡 若</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">初心 读书 知新 生活</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B8%E5%9E%8B%E8%A1%A8%E7%8E%B0"><span class="nav-number">1.</span> <span class="nav-text">典型表现</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E5%8E%9F%E5%9B%A0"><span class="nav-number">2.</span> <span class="nav-text">主要原因</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E6%83%85%E5%86%B5"><span class="nav-number">3.</span> <span class="nav-text">常见情况</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%8E%A5%E5%8F%A3%E7%BA%A7%E6%95%85%E9%9A%9C%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="nav-number">4.</span> <span class="nav-text">解决接口级故障的核心思想</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%94%E5%AF%B9%E6%96%B9%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">应对方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%8D%E7%BA%A7"><span class="nav-number">5.1.</span> <span class="nav-text">降级</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AE%9E%E7%8E%B0%E9%99%8D%E7%BA%A7%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="nav-number">5.1.1.</span> <span class="nav-text">常见的实现降级的方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%86%94%E6%96%AD"><span class="nav-number">5.1.2.</span> <span class="nav-text">熔断</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%99%90%E6%B5%81"><span class="nav-number">5.1.3.</span> <span class="nav-text">限流</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E8%AF%B7%E6%B1%82%E9%99%90%E6%B5%81"><span class="nav-number">5.1.3.1.</span> <span class="nav-text">基于请求限流</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E8%B5%84%E6%BA%90%E9%99%90%E6%B5%81"><span class="nav-number">5.1.3.2.</span> <span class="nav-text">基于资源限流</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%97%E6%B3%95"><span class="nav-number">5.1.3.3.</span> <span class="nav-text">算法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%92%E9%98%9F"><span class="nav-number">5.1.4.</span> <span class="nav-text">排队</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%AA%E4%BA%BA%E6%80%9D%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">个人思考</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#reference"><span class="nav-number">7.</span> <span class="nav-text">reference</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">闲余</p>
+  <div class="site-description" itemprop="description">初心 读书 知新 生活</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HiYu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HiYu" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhaoyyuu@gmail.com" title="E-Mail → mailto:zhaoyyuu@gmail.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+     <div class="wechat_channel">
+        <br>
+        <!-- 这里添加你的二维码图片 -->
+        <img src ="/images/wechat.png">
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://m.fanruo.net/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-8-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="闲余">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="凡 若">
+      <meta itemprop="description" content="初心 读书 知新 生活">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="架构设计 8-高可用架构设计之故障处理 | 凡 若">
+      <meta itemprop="description" content="导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第八部分，主要介绍故障处理，包口典型表现、原因、常见情况、解决思想以及解决方法。如果异地多活看作事前处理的话，那么故障处理可以看作事后的预案。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          架构设计 8-高可用架构设计之故障处理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-05-14 08:09:20 / 修改时间：09:54:29" itemprop="dateCreated datePublished" datetime="2022-05-14T08:09:20+08:00">2022-05-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" itemprop="url" rel="index"><span itemprop="name">架构设计</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+            <div class="post-description">导读：《架构设计》系列为极客时间李运华老师《从0开始学架构》课程笔记。本文为第八部分，主要介绍故障处理，包口典型表现、原因、常见情况、解决思想以及解决方法。如果异地多活看作事前处理的话，那么故障处理可以看作事后的预案。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>扫描左侧二维码 关注公众号 回复 “架构设计” 获取架构设计笔记完整思维导图</p>
+</blockquote>
+<h1 id="典型表现"><a href="#典型表现" class="headerlink" title="典型表现"></a>典型表现</h1><ul>
+<li>系统并没有宕机、网络也没有中断，但业务却出现问题了</li>
+<li>如业务响应缓慢、大量访问超时和大量访问出现异常</li>
+</ul>
+<h1 id="主要原因"><a href="#主要原因" class="headerlink" title="主要原因"></a>主要原因</h1><p>在于系统压力太大、负载太高，导致无法快速处理业务请求，由此引发更多的后续问题。原因分类：</p>
+<ul>
+<li>内部原因：包括程序 bug 导致死循环，某个接口导致数据库慢查询，程序逻辑不完善导致耗尽内存等。</li>
+<li>外部原因：包括黑客攻击，促销或者抢购引入了超出平时几倍甚至几十倍的用户，第三方系统大量请求，第三方系统响应缓慢等。</li>
+</ul>
+<h1 id="常见情况"><a href="#常见情况" class="headerlink" title="常见情况"></a>常见情况</h1><p>最常见的情况就是，数据库慢查询将数据库的服务器资源耗尽，导致读写超时，业务读写数据库时要么无法连接数据库、要么超时，最终用户看到的现象就是访问很慢，一会儿访问抛出异常，一会儿访问又是正常结果</p>
+<h1 id="解决接口级故障的核心思想"><a href="#解决接口级故障的核心思想" class="headerlink" title="解决接口级故障的核心思想"></a>解决接口级故障的核心思想</h1><ul>
+<li>优先保证核心业务</li>
+<li>优先保证绝大部分用户</li>
+</ul>
+<h1 id="应对方法"><a href="#应对方法" class="headerlink" title="应对方法"></a>应对方法</h1><h2 id="降级"><a href="#降级" class="headerlink" title="降级"></a>降级</h2><p>降级指系统将某些业务或者接口的功能降低，可以是只提供部分功能，也可以是完全停掉所有功能。核心思想：丢车保帅，优先保证核心业务。</p>
+<h3 id="常见的实现降级的方式"><a href="#常见的实现降级的方式" class="headerlink" title="常见的实现降级的方式"></a>常见的实现降级的方式</h3><ul>
+<li><p>系统后门降级：就是系统预留了后门用于降级操作</p>
+<ul>
+<li>优点：系统后门降级的方式实现成本低</li>
+<li>缺点：如果服务器数量多，需要一台一台去操作，效率比较低，这在故障处理争分夺秒的场景下是比较浪费时间的。</li>
+</ul>
+</li>
+<li><p>独立降级系统：将降级操作独立到一个单独的系统中，实现复杂的权限管理、批量操作等功能。</p>
+</li>
+</ul>
+<h3 id="熔断"><a href="#熔断" class="headerlink" title="熔断"></a>熔断</h3><p>熔断是指按照规则停掉外部接口的访问，防止某些外部接口故障导致自己的系统处理能力急剧下降或者出故障。与降级区别：</p>
+<ul>
+<li>降级的目的是应对系统自身的故障</li>
+<li>熔断的目的是应对依赖的外部系统故障的情况</li>
+</ul>
+<p>实现熔断机制键点</p>
+<ul>
+<li>一是需要有一个统一的 API 调用层，由 API 调用层来进行采样或者统计。如果接口调用散落在代码各处，就没法进行统一处理了。</li>
+<li>二是阈值的设计，例如 1 分钟内 30% 的请求响应时间超过 1 秒就熔断，这个策略中的“1 分钟”“30%”“1 秒”都对最终的熔断效果有影响。实践中，一般都是先根据分析确定阈值，然后上线观察效果，再进行调优。</li>
+</ul>
+<h3 id="限流"><a href="#限流" class="headerlink" title="限流"></a>限流</h3><p>限流指只允许系统能够承受的访问量进来，超出系统访问能力的请求将被丢弃。与降级区别：</p>
+<ul>
+<li>降级是从系统功能优先级的角度考虑如何应对故障</li>
+<li>限流则是从用户访问压力的角度来考虑如何应对故障</li>
+</ul>
+<h4 id="基于请求限流"><a href="#基于请求限流" class="headerlink" title="基于请求限流"></a>基于请求限流</h4><p>分类</p>
+<ul>
+<li>限制总量，也就是限制某个指标的累积上限，常见的是限制当前系统服务的用户总量</li>
+<li>限制时间量，也就是限制一段时间内某个指标的上限，例如 1 分钟内只允许 10000 个用户访问；每秒请求峰值最高为 10 万。</li>
+</ul>
+<p>优点：无论是限制总量还是限制时间量，共同的特点都是实现简单。</p>
+<p>缺点：</p>
+<ul>
+<li>比较难以找到合适的阈值</li>
+<li>即使找到了合适的阈值，基于请求限流还面临硬件相关的问题。例如一台 32 核的机器和 64 核的机器处理能力差别很大</li>
+</ul>
+<p>解决方案</p>
+<ul>
+<li>为了找到合理的阈值，通常情况下可以采用性能压测来确定阈值，但性能压测也存在覆盖场景有限的问题，可能出现某个性能压测没有覆盖的功能导致系统压力很大</li>
+<li>逐步优化：先设定一个阈值然后上线观察运行情况，发现不合理就调整阈值。</li>
+</ul>
+<p>适用场景：根据阈值来限制访问量的方式更多的适应于业务功能比较简单的系统，例如负载均衡系统、网关系统、抢购系统等。</p>
+<h4 id="基于资源限流"><a href="#基于资源限流" class="headerlink" title="基于资源限流"></a>基于资源限流</h4><p>基于请求限流是从系统外部考虑的，而基于资源限流是从系统内部考虑的，也就是找到系统内部影响性能的关键资源，对其使用上限进行限制。常见的内部资源包括连接数、文件句柄、线程数和请求队列等。基于资源限流相比基于请求限流能够更加有效地反映当前系统的压力。难点：</p>
+<ul>
+<li>如何确定关键资源</li>
+<li>如何确定关键资源的阈值</li>
+<li>解决方案：逐步调优的过程：设计的时候先根据推断选择某个关键资源和阈值，然后测试验证，再上线观察，如果发现不合理，再进行优化。</li>
+</ul>
+<h4 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h4><p>时间窗：限制一定时间窗口内的请求量或者资源消耗量</p>
+<ul>
+<li><p>固定时间窗：统计固定时间周期内的请求量或者资源消耗量，超过限额就会启动限流。优缺点：</p>
+<ul>
+<li>优点：实现简单</li>
+<li>缺点：存在临界点问题</li>
+</ul>
+</li>
+<li><p>滑动时间窗：两个统计周期部分重叠，从而避免短时间内的两个统计点分属不同的时间窗的情况。优缺点：</p>
+<ul>
+<li>优点：解决了临界点问题</li>
+<li>缺点：实现复杂些</li>
+</ul>
+</li>
+</ul>
+<p>桶算法：用一个虚拟的“桶”来临时存储一些东西，来起到控制速率的效果。</p>
+<p>漏桶：将请求放入“桶”（消息队列等），业务处理单元（线程、进程和应用等）从桶里拿请求处理，桶满则丢弃新的请求。</p>
+<ul>
+<li><p>设计关键点：</p>
+<ul>
+<li>流入速率不固定：可能瞬间流入非常多的请求，例如 0 点签到、整点秒杀。</li>
+<li>匀速 (极速) 流出：这是理解漏桶算法的关键，也就是说即使大量请求进入了漏桶，但是从漏桶流出的速度是匀速的，速度的最大值就是系统的极限处理速度。需要注意的是：如果漏桶没有堆积，那么流出速度就等于流入速度，这个时候流出速度就不是匀速的。这样就保证了系统在收到海量请求的时候不被压垮，这是第一层的保护措施。</li>
+<li>桶满则丢弃请求：这是第二层保护措施，也就是说漏桶不是无限容量，而是有限容量，例如漏桶最多存储 100 万个请求，桶满了则直接丢弃后面的请求。</li>
+</ul>
+</li>
+<li><p>优点</p>
+<ul>
+<li>实现简单</li>
+<li>提供双层保护措施</li>
+</ul>
+</li>
+<li><p>缺点</p>
+<ul>
+<li>突发大量流量时丢弃的请求较少，因为漏桶本身有缓存请求的作用。</li>
+<li>桶大小动态调整比较困难（例如 Java BlockingQueue），需要不断的尝试才能找到符合业务需求的最佳桶大小。</li>
+<li>无法精确控制流出速度，也就是业务的处理速度。</li>
+</ul>
+</li>
+<li><p>适用场景：主要适用于瞬时高并发流量的场景（例如刚才提到的 0 点签到、整点秒杀等）。</p>
+</li>
+</ul>
+<p>令牌桶：令牌桶算法和漏桶算法的不同之处在于，桶中放入的不是请求，而是“令牌”，这个令牌就是业务处理前需要拿到的“许可证”。也就是说，当系统收到一个请求时，先要到令牌桶里面拿“令牌”，拿到令牌才能进一步处理，拿不到就要丢弃请求。</p>
+<ul>
+<li><p>设计关键点</p>
+<ul>
+<li>有一个处理单元往桶里面放令牌，放的速率是可以控制的。</li>
+<li>桶里面可以累积一定数量的令牌，当突发流量过来的时候，因为桶里面有累积的令牌，此时的业务处理速度会超过令牌放入的速度。</li>
+<li>如果令牌不足，即使系统有能力处理，也会丢弃请求。</li>
+</ul>
+</li>
+<li><p>优点：可以动态调整处理速率，实现更加灵活。</p>
+</li>
+<li><p>缺点</p>
+<ul>
+<li>突发大量流量的时候可能丢弃很多请求，因为令牌桶不能累积太多令牌。</li>
+<li>实现相对复杂。</li>
+</ul>
+</li>
+<li><p>适用场景</p>
+<ul>
+<li>一种是需要控制访问第三方服务的速度，防止把下游压垮，例如支付宝需要控制访问银行接口的速率；</li>
+<li>一种是需要控制自己的处理速度，防止过载，例如压测结果显示系统最大处理 TPS 是 100，那么就可以用令牌桶来限制最大的处理速度。</li>
+</ul>
+</li>
+</ul>
+<h3 id="排队"><a href="#排队" class="headerlink" title="排队"></a>排队</h3><p>排队实际上是限流的一个变种，限流是直接拒绝用户，排队是让用户等待一段时间。优缺点：</p>
+<ul>
+<li>优点：排队虽然没有直接拒绝用户。</li>
+<li>缺点：<ul>
+<li>用户等了很长时间后进入系统，体验并不一定比限流好</li>
+<li>由于排队需要临时缓存大量的业务请求，单个系统内部无法缓存这么多数据，一般情况下，排队需要用独立的系统去实现，例如使用 Kafka 这类消息队列来缓存用户请求。</li>
+</ul>
+</li>
+</ul>
+<p>适用场景：秒杀活动等</p>
+<h1 id="个人思考"><a href="#个人思考" class="headerlink" title="个人思考"></a>个人思考</h1><p>服务不可能一直100%的可用性，开发运维人员要做的就是尽可能的减少损失，提前做好预案，发生故障之后，第一时间就是止损。止损往往是一个抉择的过程，要优先保证核心用户可以正常使用。在前司，平台对第三方和自己的服务提供支持，同时，这些能力也有核心能力和非核心能力，当有故障的时候，运维平台通过预案，会将非核心能力摘除（降级）处理。</p>
+<p>此外，笔者还负责开发了一套基于 OpenResty 实现的防攻击平台，支持 IP、用户、特定字段的屏蔽、限流、导流（分流）功能。可以有效的减少服务故障或者流量异常带来的损失。由于已经在 gitchat 发布了付费文章，因此没办法公开发表了。感兴趣的同学可以 gitchat 上查看 <a target="_blank" rel="noopener" href="https://gitbook.cn/gitchat/activity/5e94596fe416f80b73e3e278%E3%80%82">https://gitbook.cn/gitchat/activity/5e94596fe416f80b73e3e278。</a></p>
+<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><ol>
+<li>《从 0 开始学架构》 <a target="_blank" rel="noopener" href="https://time.geekbang.org/column/intro/100006601?tab=catalog">https://time.geekbang.org/column/intro/100006601?tab=catalog</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>闲余
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://m.fanruo.net/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-8-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86" title="架构设计 8-高可用架构设计之故障处理">https://m.fanruo.net/架构设计-8-高可用架构设计之故障处理</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-ND</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" rel="tag"># 架构设计</a>
+              <a href="/tags/%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84/" rel="tag"># 高可用架构</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-7-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%BC%82%E5%9C%B0%E5%A4%9A%E6%B4%BB" rel="prev" title="架构设计 7-高可用架构设计之异地多活">
+                  <i class="fa fa-chevron-left"></i> 架构设计 7-高可用架构设计之异地多活
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1-9-%E5%8F%AF%E6%89%A9%E5%B1%95%E6%9E%B6%E6%9E%84%E4%B9%8B%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84" rel="next" title="架构设计 9-可扩展架构之分层架构">
+                  架构设计 9-可扩展架构之分层架构 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">闲余</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">116k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:46</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"HiYu","repo":"HiYu.github.io","client_id":"f2b3a11984c32f7b9148","client_secret":"455bc8ef7a292a46b430a5d965652175b57eaced","admin_user":"HiYu","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"en | es-ES | fr | ru | zh-CN | zh-TW","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"e7d2c383164cf113c28cdf4930a91790"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>
